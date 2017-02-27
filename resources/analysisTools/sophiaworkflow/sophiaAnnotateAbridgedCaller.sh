@@ -1,0 +1,85 @@
+#!/bin/bash
+source ${CONFIG_FILE}
+source python3sourceme
+
+# Get rid of the extension: .bed.gz This is done for most of the files in Roddy, but some are left here. We still
+# need to figure out, if the files should all be passed as parameters.
+tumorFileRaw=${tumorFile:0:${#tumorFile}-7}
+
+FILE_LEFTCONTEXT=${tumorFileRaw}_leftContext
+FILE_LEFTCONTEXT_PRE=${tumorFileRaw}_leftContextPre
+FILE_RIGHTCONTEXT=${tumorFileRaw}_rightContext
+FILE_RIGHTCONTEXT_PRE=${tumorFileRaw}_rightContextPre
+FILE_DUMLEFT=${tumorFileRaw}_dumLeft
+FILE_DUMRIGHT=${tumorFileRaw}_dumRight
+
+if [[ ! -e "${bloodFile}" ]]
+then
+	${SOPHIA_ANNOTATION_BINARY} --tumorresults ${tumorFile} --mref ${mRef} \
+	                            --pidsinmref ${pidsInMref} --bpfreq ${bpFreq} \
+	                            --artifactlofreq ${artifactLoFreq} --artifacthifreq ${artifactHiFreq} \
+	                            --clonalitystrictlofreq ${clonalityStrictLoFreq} --clonalitylofreq ${clonalityLoFreq} \
+	                            --clonalityhifreq ${clonalityHiFreq} --germlineoffset ${germlineFuzziness} \
+	                            --defaultreadlengthtumor ${defaultReadLength} --germlinedblimit ${germlineDbLimit} \
+	                              | awk '($4 != "NA")' | grep -v "GL00" \
+	                              | sort -V -k 1,1 -k2,2 -k4,4 -k5,5 > ${BEDPE_RESULT_FILE_ANNOTATED_ABRIDGED}
+else
+	${SOPHIA_ANNOTATION_BINARY} --tumorresults ${tumorFile} --mref ${mRef} \
+	                            --controlresults ${bloodFile} --pidsinmref ${pidsInMref} --bpfreq ${bpFreq} \
+	                            --artifactlofreq ${artifactLoFreq} --artifacthifreq ${artifactHiFreq} \
+	                            --clonalitystrictlofreq ${clonalityStrictLoFreq} --clonalitylofreq ${clonalityLoFreq} \
+	                            --clonalityhifreq ${clonalityHiFreq} --germlineoffset ${germlineFuzziness} \
+	                            --defaultreadlengthtumor ${defaultReadLength} --defaultreadlengthcontrol ${defaultReadLength} --germlinedblimit ${germlineDbLimit} \
+	                              | awk '($4 != "NA")' | grep -v "GL00" \
+	                              | sort -V -k 1,1 -k2,2 -k4,4 -k5,5 > ${BEDPE_RESULT_FILE_ANNOTATED_ABRIDGED}
+fi
+
+cut -f 1-3 ${BEDPE_RESULT_FILE_ANNOTATED_ABRIDGED} | cat -n | sed 's/ //g' \
+                | awk -v OFS='\t'  '{print $2, $3, $4, $1}' \
+                | ${BEDTOOLS_BINARY} intersect -a stdin -b ${intronExonRefBed} -sorted -loj -g ${chromSizesRef} \
+                | tr -s '\t' '\t' \
+                | cut -f 1-4,8 > ${FILE_DUMLEFT}
+                
+${BEDTOOLS_BINARY} merge -d -1 -i ${FILE_DUMLEFT} -c 4,5 -o collapse -delim "," \
+                | ${BEDTOOLS_BINARY} closest -a stdin -b ${geneRefBed} -g ${chromSizesRef} -io -D ref -id -t last -k 1 \
+                | cut -f 1-5,9-10 \
+                | ${BEDTOOLS_BINARY} closest -a stdin -b ${geneRefBed} -g ${chromSizesRef} -io -D ref -iu -t first -k 1 \
+                | cut -f 1-7,11-12 > ${FILE_LEFTCONTEXT_PRE}
+                
+${PYTHON_BINARY} ${TOOL_COORDINATE_CORRECTION_SCRIPT} ${FILE_LEFTCONTEXT_PRE} > ${FILE_LEFTCONTEXT}
+
+cut -f 4-6 ${BEDPE_RESULT_FILE_ANNOTATED_ABRIDGED}  | cat -n | sed 's/ //g' \
+                | awk -v OFS='\t'  '{print $2, $3, $4, $1}' \
+                | sort -V -k1,1 -k2,2 -k3,3 \
+                | ${BEDTOOLS_BINARY} intersect -a stdin -b ${intronExonRefBed} -sorted -loj -g ${chromSizesRef} \
+                | tr -s '\t' '\t' \
+                | cut -f 1-4,8 > ${FILE_DUMRIGHT}
+                
+${BEDTOOLS_BINARY} merge -d -1 -i ${FILE_DUMRIGHT} -c 4,5 -o collapse -delim "," \
+                | ${BEDTOOLS_BINARY} closest -a stdin -b ${geneRefBed} -g ${chromSizesRef} -io -D ref -id -t last -k 1 \
+                | cut -f 1-5,9-10 \
+                | ${BEDTOOLS_BINARY} closest -a stdin -b ${geneRefBed} -g ${chromSizesRef} -io -D ref -iu -t first -k 1 \
+                | cut -f 1-7,11-12 > ${FILE_RIGHTCONTEXT_PRE}
+                
+${PYTHON_BINARY} ${TOOL_COORDINATE_CORRECTION_SCRIPT} ${FILE_RIGHTCONTEXT_PRE} | sort -n -k 4,4 > ${FILE_RIGHTCONTEXT}
+
+paste ${BEDPE_RESULT_FILE_ANNOTATED_ABRIDGED} <(cut -f 5- ${FILE_LEFTCONTEXT}) <(cut -f 5- ${FILE_RIGHTCONTEXT}) > ${BEDPE_RESULT_FILE_ANNOTATED_ABRIDGED_CONTEXT}
+rm ${BEDPE_RESULT_FILE_ANNOTATED_ABRIDGED} ${FILE_DUMLEFT}  ${FILE_DUMRIGHT} ${FILE_LEFTCONTEXT_PRE} ${FILE_LEFTCONTEXT}  ${FILE_RIGHTCONTEXT_PRE}  ${FILE_RIGHTCONTEXT}
+cat <(echo -e ${standardHeader})  <(cat ${BEDPE_RESULT_FILE_ANNOTATED_ABRIDGED_CONTEXT}) | uniq > ${BEDPE_RESULT_FILE_FILTERED}
+cat <(echo -e ${standardHeader})  <(grep GERMLINE ${BEDPE_RESULT_FILE_FILTERED}) | uniq > ${BEDPE_RESULT_FILE}
+
+if [[ -e "${bloodFile}" ]]
+then
+	grep -v GERMLINE ${BEDPE_RESULT_FILE_FILTERED}  > ${BEDPE_RESULT_FILE_FILTERED_SOMATIC}
+	set +e
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED} "${project}: ${pid} G&S(${analysisTag})" "1"
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED} "${project}: ${pid} G&S(${analysisTag})" "3"
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED_SOMATIC} "${project}: ${pid} Somatic(${analysisTag})" "1"
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED_SOMATIC} "${project}: ${pid} Somatic(${analysisTag})" "3"
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE} "${project}: ${pid} Germline(${analysisTag})" "1"
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE} "${project}: ${pid} Germline(${analysisTag})" "3"
+else
+	set +e
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE} "${project}: ${pid} G&S(${analysisTag})" "1"
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE} "${project}: ${pid} G&S(${analysisTag})" "3"
+fi
