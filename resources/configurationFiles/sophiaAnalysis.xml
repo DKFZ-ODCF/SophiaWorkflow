@@ -35,7 +35,7 @@
         <!-- Binaries -->
         <cvalue name='version' value='v34' type='string' />
         <cvalue name='BINARIES_BASE' value='/icgc/dkfzlsdf/analysis/B080/toprak/public/sophiaDist/' type='string' />
-        <cvalue name="RSCRIPT_BINARY" value="Rscript"/>
+        <cvalue name="RSCRIPT_BINARY" value="Rscript-3.0.0"/>
         <cvalue name="SOPHIA_BINARY" value="${BINARIES_BASE}/sophia_${version}"/>
         <cvalue name="SOPHIA_ANNOTATION_BINARY" value="${BINARIES_BASE}/sophiaAnnotate/sophiaAnnotate"/>
         <cvalue name="SAMTOOLS_BINARY" value="samtools-1.2"/>
