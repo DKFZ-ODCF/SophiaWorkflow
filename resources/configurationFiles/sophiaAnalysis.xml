@@ -65,8 +65,10 @@
         <cvalue name='lowQualOverhangThreshold' value='5' type='integer' />
         <cvalue name='isizeSigmaThreshold' value='5' type='integer' />
         <cvalue name='bpSupportThreshold' value='3' type='integer' />
-        <cvalue name='tumorDefaultReadLength' value='151' type='integer' />
-        <cvalue name='controlDefaultReadLength' value='151' type='integer' />
+        <cvalue name='tumorDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data
+" />
+        <cvalue name='controlDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data
+" />
 
         <cvalue name='REFERENCES_BASE' value='${ANNOTATION_PIPELINE_BASE}/annotationMaterials/' type='string' />
         <cvalue name='geneRefBed' value='${REFERENCES_BASE}/gencode.v19.annotation_plain.genes_collapsed_sorted_filtered_coding.bed.gz' type='string' />
