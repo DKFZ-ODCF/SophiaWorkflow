@@ -2,6 +2,7 @@ package de.dkfz.b080.co.sophiaworkflow
 
 import de.dkfz.b080.co.common.WorkflowUsingMergedBams
 import de.dkfz.b080.co.files.BasicBamFile
+import de.dkfz.b080.co.files.COFileStageSettings
 import de.dkfz.roddy.StringConstants
 import de.dkfz.roddy.config.ConfigurationValue
 import de.dkfz.roddy.config.RecursiveOverridableMapContainerForConfigurationValues
@@ -54,8 +55,11 @@ class SophiaWorkflow extends WorkflowUsingMergedBams {
     boolean execute(ExecutionContext context, BasicBamFile bamControlMerged, BasicBamFile bamTumorMerged) {
         boolean fullWorkflow = bamControlMerged
 
+        context.configuration.configurationValues << new ConfigurationValue("tumorSample", (bamTumorMerged.fileStage as COFileStageSettings).sample.name)
+
         if (fullWorkflow) { // Control and tumor
-            context.getConfiguration().getConfigurationValues().add(new ConfigurationValue(ANALYSIS_TAG, "tumorControl"))
+            context.configuration.configurationValues << new ConfigurationValue(ANALYSIS_TAG, "tumorControl")
+            context.configuration.configurationValues << new ConfigurationValue("controlSample", (bamControlMerged.fileStage as COFileStageSettings).sample.name)
 
             BaseFile sophiaControlFile = call(TOOL_SOPHIA, bamControlMerged, getISizesForBam(context, bamControlMerged, 0)) as BaseFile
             BaseFile sophiaTumorFile = call(TOOL_SOPHIA, bamTumorMerged, getISizesForBam(context, bamTumorMerged, 1)) as BaseFile
