@@ -1,5 +1,17 @@
 #!/bin/bash
 source ${CONFIG_FILE}
+
+if [ "$LOAD_MODULE" == true ]
+then
+        module load $MODULE_ENV
+        SAMTOOLS_BINARY=samtools
+        SOPHIA_ANNOTATION_BINARY=sophiaAnnotate
+        RSCRIPT_BINARY=Rscript
+        SAMTOOLS_BINARY=samtools
+        BEDTOOLS_BINARY=bedtools
+        PYTHON_BINARY=python3
+fi
+
 source python3sourceme
 
 # Get rid of the extension: .bed.gz This is done for most of the files in Roddy, but some are left here. We still
@@ -10,7 +22,7 @@ tumorFileRaw=${tumorFileRaw##*/}
 
 #TEMPORARY FILES
 ABRIDGED_ANNOTATION=${tumorFileRaw}_annotatedAbridged.bedpe
-ABRIDGED_ANNOTATION_CONTEXT=${tumorFileRaw}_annotatedAbridged.bedpe
+ABRIDGED_ANNOTATION_CONTEXT=${tumorFileRaw}_annotatedAbridgedContext.bedpe
 FILE_LEFTCONTEXT=${tumorFileRaw}_leftContext
 FILE_LEFTCONTEXT_PRE=${tumorFileRaw}_leftContextPre
 FILE_RIGHTCONTEXT=${tumorFileRaw}_rightContext
@@ -18,12 +30,6 @@ FILE_RIGHTCONTEXT_PRE=${tumorFileRaw}_rightContextPre
 FILE_DUMLEFT=${tumorFileRaw}_dumLeft
 FILE_DUMRIGHT=${tumorFileRaw}_dumRight
 #TEMPORARY FILES END
-
-#IMPORTANT FILES
-#BEDPE_RESULT_FILE_FILTERED=${outputDir}/${prefix}_${pid}_${analysisTag}_filtered.bedpe
-#BEDPE_RESULT_FILE_FILTERED_SOMATIC=${outputDir}/${prefix}_${pid}_${analysisTag}_filtered_somatic.bedpe
-#BEDPE_RESULT_FILE_FILTERED_GERMLINE=${outputDir}/${prefix}_${pid}_${analysisTag}_filtered_germlineStrict.bedpe
-#IMPORTANT FILES END
 
 if [[ ! -e "${bloodFile}" ]]
 then
@@ -50,7 +56,7 @@ ${BEDTOOLS_BINARY} merge -d -1 -i ${FILE_DUMLEFT} -c 4,5 -o collapse -delim "," 
                 | ${BEDTOOLS_BINARY} closest -a stdin -b ${geneRefBed} -g ${chromSizesRef} -io -D ref -id -t last -k 1 | cut -f 1-5,9-10 \
                 | ${BEDTOOLS_BINARY} closest -a stdin -b ${geneRefBed} -g ${chromSizesRef} -io -D ref -iu -t first -k 1 | cut -f 1-7,11-12 > ${FILE_LEFTCONTEXT_PRE}
                 
-${PYTHON_BINARY} ${TOOL_COORDINATE_CORRECTION_SCRIPT} ${FILE_LEFTCONTEXT_PRE} > ${FILE_LEFTCONTEXT}
+${PYTHON_BINARY} ${TOOL_SOPHIA_ANNOTATE_COORDINATE_CORRECTION} ${FILE_LEFTCONTEXT_PRE} > ${FILE_LEFTCONTEXT}
 
 cut -f 4-6 ${ABRIDGED_ANNOTATION}  | cat -n | sed 's/ //g' | awk -v OFS='\t'  '{print $2, $3, $4, $1}' | sort -V -k1,1 -k2,2 -k3,3 \
                 | ${BEDTOOLS_BINARY} intersect -a stdin -b ${intronExonRefBed} -sorted -loj -g ${chromSizesRef} | tr -s '\t' '\t'  | cut -f 1-4,8 > ${FILE_DUMRIGHT}
@@ -59,7 +65,7 @@ ${BEDTOOLS_BINARY} merge -d -1 -i ${FILE_DUMRIGHT} -c 4,5 -o collapse -delim ","
                 | ${BEDTOOLS_BINARY} closest -a stdin -b ${geneRefBed} -g ${chromSizesRef} -io -D ref -id -t last -k 1 | cut -f 1-5,9-10 \
                 | ${BEDTOOLS_BINARY} closest -a stdin -b ${geneRefBed} -g ${chromSizesRef} -io -D ref -iu -t first -k 1 | cut -f 1-7,11-12 > ${FILE_RIGHTCONTEXT_PRE}
                 
-${PYTHON_BINARY} ${TOOL_COORDINATE_CORRECTION_SCRIPT} ${FILE_RIGHTCONTEXT_PRE} | sort -n -k 4,4 > ${FILE_RIGHTCONTEXT}
+${PYTHON_BINARY} ${TOOL_SOPHIA_ANNOTATE_COORDINATE_CORRECTION} ${FILE_RIGHTCONTEXT_PRE} | sort -n -k 4,4 > ${FILE_RIGHTCONTEXT}
 
 paste ${ABRIDGED_ANNOTATION} <(cut -f 5- ${FILE_LEFTCONTEXT}) <(cut -f 5- ${FILE_RIGHTCONTEXT}) > ${ABRIDGED_ANNOTATION_CONTEXT}
 cat <(echo -e ${STANDARDHEADER})  <(cat ${ABRIDGED_ANNOTATION_CONTEXT}) | uniq > ${BEDPE_RESULT_FILE_FILTERED}
@@ -78,19 +84,19 @@ rm ${FILE_DUMRIGHT}
 
 if [[ -e "${bloodFile}" ]]
 then
-cat <(echo -e ${STANDARDHEADER})  <(grep GERMLINE ${BEDPE_RESULT_FILE_FILTERED}) | uniq > ${BEDPE_RESULT_FILE_GERMLINE}
-	grep -v GERMLINE ${BEDPE_RESULT_FILE_FILTERED}  > ${BEDPE_RESULT_FILE_FILTERED_SOMATIC}
+	cat <(echo -e ${STANDARDHEADER})  <(grep GERMLINE ${BEDPE_RESULT_FILE_FILTERED}) | uniq > ${BEDPE_RESULT_FILE_FILTERED_GERMLINE}
+	grep -v GERMLINE ${BEDPE_RESULT_FILE_FILTERED} > ${BEDPE_RESULT_FILE_FILTERED_SOMATIC}
 	set +e
-	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED} "${project}: ${pid} G&S(${analysisTag})" "1"
-	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED} "${project}: ${pid} G&S(${analysisTag})" "3"
-	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED_SOMATIC} "${project}: ${pid} Somatic(${analysisTag})" "1"
-	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED_SOMATIC} "${project}: ${pid} Somatic(${analysisTag})" "3"
-	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED_GERMLINE} "${project}: ${pid} Germline(${analysisTag})" "1"
-	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED_GERMLINE} "${project}: ${pid} Germline(${analysisTag})" "3"
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED} "${pid} G&S(${analysisTag})" "1"
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED} "${pid} G&S(${analysisTag})" "3"
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED_SOMATIC} "${pid} Somatic(${analysisTag})" "1"
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED_SOMATIC} "${pid} Somatic(${analysisTag})" "3"
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED_GERMLINE} "${pid} Germline(${analysisTag})" "1"
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED_GERMLINE} "${pid} Germline(${analysisTag})" "3"
 	#QC WILL COME HERE
 	#QC WILL END HERE
 else
 	set +e
-	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED} "${project}: ${pid} G&S(${analysisTag})" "1"
-	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED} "${project}: ${pid} G&S(${analysisTag})" "3"
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED} "${pid} G&S(${analysisTag})" "1"
+	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED} "${pid} G&S(${analysisTag})" "3"
 fi
