@@ -28,7 +28,7 @@
         <cvalue name='alignmentOutputDirectory' value='alignment' type='string'/>
         <cvalue name='insertSizesOutputDirectory' value='insertsize_distribution'/>
         <cvalue name='qcOutputDirectory' value='qualitycontrol' type='string'/>
-        <cvalue name='sophiaOutputDirectory' value='sv_${tumorSample}' type='string'/>
+        <cvalue name='sophiaOutputDirectory' value='SOPHIA_${tumorSample}_${controlSample}' type='string'/>
         <cvalue name='ALIGNMENT_DIR' value='${outputAnalysisBaseDirectory}/${alignmentOutputDirectory}' type='string'/>
         <cvalue name='SOPHIA_DIR' value='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}' type='string'/>
 
@@ -69,7 +69,7 @@
         <cvalue name='lowQualOverhangThreshold' value='5' type='integer' />
         <cvalue name='isizeSigmaThreshold' value='5' type='integer' />
         <cvalue name='bpSupportThreshold' value='3' type='integer' />
-        <cvalue name='defaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
+        <!-- <cvalue name='defaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" /> -->
         <cvalue name='tumorDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
         <cvalue name='controlDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
 
@@ -101,6 +101,7 @@
             </resourcesets>
             <input type="file" typeof="BasicBamFile" scriptparameter="BAMFILE"/>
             <input type="file" typeof="InsertSizesValueFile" scriptparameter="mergedIsizes"/>
+​            <input type="string" setby="callingCode" scriptparameter="defaultReadLength"/>
             <output type="file" typeof="SophiaOutputBedpe" scriptparameter="BPS_OUT"/>
         </tool>
 
@@ -114,6 +115,7 @@
                 <output type="file" typeof="AnnotationFilteredGermlineBedpeFileNoControl" scriptparameter="BEDPE_RESULT_FILE_FILTERED_GERMLINE"/>
                 <output type="file" typeof="AnnotationFilteredBedpeFileNoControl" scriptparameter="BEDPE_RESULT_FILE_FILTERED"/>
                 <output type="file" typeof="AnnotationFilteredSomaticBedpeFileNoControl" scriptparameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC"/>
+                <output type="file" typeof="AnnotationFilteredSomaticBedpeFileNoControlACEseq" scriptparameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC_ACESEQ"/>
             </output>
         </tool>
         <tool name="sophiaAnnotator" value="sophiaAnnotateAbridgedCaller.sh" basepath="sophiaworkflow">
@@ -127,6 +129,7 @@
                 <output type="file" typeof="AnnotationFilteredGermlineBedpeFileTmVsCntrl" scriptparameter="BEDPE_RESULT_FILE_FILTERED_GERMLINE"/>
                 <output type="file" typeof="AnnotationFilteredBedpeFileTmVsCntrl" scriptparameter="BEDPE_RESULT_FILE_FILTERED"/>
                 <output type="file" typeof="AnnotationFilteredSomaticBedpeFileTmVsCntrl" scriptparameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC"/>
+                <output type="file" typeof="AnnotationFilteredSomaticBedpeFileTmVsCntrlACEseq" scriptparameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC_ACESEQ"/>
             </output>
         </tool>
     </processingTools>
@@ -136,12 +139,16 @@
 
         <filename class='SophiaOutputBedpe' derivedFrom="BasicBamFile" pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/${sample}_${pid}_bps.bed.gz'/>
 
-        <filename class='AnnotationFilteredGermlineBedpeFileNoControl'   derivedFrom='SophiaOutputBedpe' pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/SOPHIA_${pid}_${tumorSample}_filtered_germlineStrict.bedpe'/>
-        <filename class='AnnotationFilteredBedpeFileNoControl'           derivedFrom='SophiaOutputBedpe' pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/SOPHIA_${pid}_${tumorSample}_filtered.bedpe'/>
-        <filename class='AnnotationFilteredSomaticBedpeFileNoControl'    derivedFrom='SophiaOutputBedpe' pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/SOPHIA_${pid}_${tumorSample}_filtered_somatic.bedpe'/>
+        <filename class='AnnotationFilteredGermlineBedpeFileNoControl'   derivedFrom='SophiaOutputBedpe' pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_filtered_germlineStrict.bedpe'/>
+        <filename class='AnnotationFilteredBedpeFileNoControl'           derivedFrom='SophiaOutputBedpe' pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_filtered.bedpe'/>
+        <filename class='AnnotationFilteredSomaticBedpeFileNoControl'    derivedFrom='SophiaOutputBedpe' pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_filtered_somatic.bedpe'/>
+        <filename class='AnnotationFilteredSomaticBedpeFileNoControlACEseq'    derivedFrom='SophiaOutputBedpe' 
+pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_${tumorSample}_filtered_somatic_minEventScore3.bedpe'/>
 
-        <filename class='AnnotationFilteredGermlineBedpeFileTmVsCntrl'   derivedFrom='SophiaOutputBedpe' pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/SOPHIA_${pid}_${tumorSample}-${controlSample}_filtered_germlineStrict.bedpe'/>
-        <filename class='AnnotationFilteredBedpeFileTmVsCntrl'           derivedFrom='SophiaOutputBedpe' pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/SOPHIA_${pid}_${tumorSample}-${controlSample}_filtered.bedpe'/>
-        <filename class='AnnotationFilteredSomaticBedpeFileTmVsCntrl'    derivedFrom='SophiaOutputBedpe' pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/SOPHIA_${pid}_${tumorSample}-${controlSample}_filtered_somatic.bedpe'/>
+        <filename class='AnnotationFilteredGermlineBedpeFileTmVsCntrl'   derivedFrom='SophiaOutputBedpe' pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_filtered_germlineStrict.bedpe'/>
+        <filename class='AnnotationFilteredBedpeFileTmVsCntrl'           derivedFrom='SophiaOutputBedpe' pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_filtered.bedpe'/>
+        <filename class='AnnotationFilteredSomaticBedpeFileTmVsCntrl'    derivedFrom='SophiaOutputBedpe' pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_filtered_somatic.bedpe'/>
+        <filename class='AnnotationFilteredSomaticBedpeFileTmVsCntrlACEseq'    derivedFrom='SophiaOutputBedpe' pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_filtered_somatic_minEventScore3.bedpe'/>
+
     </filenames>
 </configuration>

@@ -57,17 +57,21 @@ class SophiaWorkflow extends WorkflowUsingMergedBams {
 
         context.configuration.configurationValues << new ConfigurationValue("tumorSample", (bamTumorMerged.fileStage as COFileStageSettings).sample.name)
 
+        String tumorDefaultReadLength = context.configuration.configurationValues.get("tumorDefaultReadLength")
+        String controlDefaultReadLength= context.configuration.configurationValues.get("controlDefaultReadLength")
+
+
         if (fullWorkflow) { // Control and tumor
             context.configuration.configurationValues << new ConfigurationValue(ANALYSIS_TAG, "tumorControl")
             context.configuration.configurationValues << new ConfigurationValue("controlSample", (bamControlMerged.fileStage as COFileStageSettings).sample.name)
 
-            BaseFile sophiaControlFile = call(TOOL_SOPHIA, bamControlMerged, getISizesForBam(context, bamControlMerged, 0)) as BaseFile
-            BaseFile sophiaTumorFile = call(TOOL_SOPHIA, bamTumorMerged, getISizesForBam(context, bamTumorMerged, 1)) as BaseFile
+            BaseFile sophiaControlFile = call(TOOL_SOPHIA, bamControlMerged, getISizesForBam(context, bamControlMerged, 0),"defaultReadLength=${controlDefaultReadLength}") as BaseFile
+            BaseFile sophiaTumorFile = call(TOOL_SOPHIA, bamTumorMerged, getISizesForBam(context, bamTumorMerged, 1),"defaultReadLength=${tumorDefaultReadLength}") as BaseFile
 
             call("sophiaAnnotator", sophiaControlFile, sophiaTumorFile)
         } else { //NoControl!
             context.getConfiguration().getConfigurationValues().add(new ConfigurationValue(ANALYSIS_TAG, "tumorOnly"))
-            BaseFile sophiaTumorFile = call(TOOL_SOPHIA, bamTumorMerged, getISizesForBam(context, bamTumorMerged, 0)) as BaseFile
+            BaseFile sophiaTumorFile = call(TOOL_SOPHIA, bamTumorMerged, getISizesForBam(context, bamTumorMerged, 0),"defaultReadLength=${tumorDefaultReadLength}") as BaseFile
 
             call("sophiaAnnotatorNoControl", sophiaTumorFile)
         }
