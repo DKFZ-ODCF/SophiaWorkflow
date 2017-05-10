@@ -6,6 +6,11 @@ scoreThreshold=as.numeric(args[3])
 
 annos=read.delim(annosFile,header = TRUE,stringsAsFactors = FALSE)
 annos=annos[annos$eventScore>=scoreThreshold,]
+annos=annos[!(annos[,1]=="hs37d5" & annos[,4]=="hs37d5"),]
+annos=annos[!(annos[,1]=="hs37d5" & grepl("UNKNOWN",annos[,8])),]
+if(nrow(annos)==0){
+	stop()
+}
 annos$dummyChromosome=rep(FALSE,nrow(annos))
 
 mtLocs=annos[,4]=="MT"
@@ -22,7 +27,15 @@ if(any(decoyLocs)){
   annos[decoyLocs,5]=annos[decoyLocs,3]
   annos[decoyLocs,6]=annos[decoyLocs,3]+1
   annos$svtype[decoyLocs]="UNKNOWN_DECOY"
-  annos$dummyChromosome[decoyLocs]=TRUE  
+  annos$dummyChromosome[decoyLocs]=TRUE
+}
+decoyLocs2=annos[,1]=="hs37d5"
+if(any(decoyLocs2)){
+	annos[decoyLocs2,1]=annos[decoyLocs2,4]
+	annos[decoyLocs2,2]=annos[decoyLocs2,6]
+	annos[decoyLocs2,3]=annos[decoyLocs2,6]+1
+	annos$svtype[decoyLocs2]="UNKNOWN_DECOY"
+	annos$dummyChromosome[decoyLocs2]=TRUE
 }
 
 annos$clonality=rep(0,nrow(annos))
@@ -97,7 +110,7 @@ unscaledOutput=paste(annosFile,"score",scoreThreshold,"unscaled.pdf",sep="_")
 pdf(unscaledOutput)
 circos.initializeWithIdeogram()
 circos.par(points.overflow.warning=FALSE)
-title(pid)
+title(paste0(pid," score>=",scoreThreshold, " unscaled"))
 circos.genomicLink(coords1[largeEventSelection,], coords2[largeEventSelection,],col = eventColors[largeEventSelection])
 circos.genomicLink(coords1[mediumEventSelection,], coords2[mediumEventSelection,],col = eventColors[mediumEventSelection],h=0.15)
 circos.genomicLink(coords1[smallEventSelection,], coords2[smallEventSelection,],col = eventColors[smallEventSelection],h=0.05)
@@ -107,7 +120,7 @@ scaledOutput=paste(annosFile,"score",scoreThreshold,"scaled.pdf",sep="_")
 pdf(scaledOutput)
 circos.initializeWithIdeogram()
 circos.par(points.overflow.warning=FALSE)
-title(pid)
+title(paste0(pid," score>=",scoreThreshold, " scaled"))
 circos.genomicLink(coords1[largeEventSelection,], coords2[largeEventSelection,],col = eventScaledColors[largeEventSelection])
 circos.genomicLink(coords1[mediumEventSelection,], coords2[mediumEventSelection,],col = eventScaledColors[mediumEventSelection],h=0.15)
 circos.genomicLink(coords1[smallEventSelection,], coords2[smallEventSelection,],col = eventScaledColors[smallEventSelection],h=0.05)
