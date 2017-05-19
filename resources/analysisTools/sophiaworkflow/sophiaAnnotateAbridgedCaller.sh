@@ -55,19 +55,19 @@ touch $QC_JSON_FILE_TMP
 echo -e "{\n  \"all\": {" > $QC_JSON_FILE_TMP
 # FOREACH WARNING ADD A VALUE TO THE QC JSON FILE
 controlMassiveInvPrefilteringLevel=0
-tumorMassiveInvFiteringLevel=0
+tumorMassiveInvFilteringLevel=0
 if [[ "`grep controlMassiveInvPrefilteringLevel ${ABRIDGED_ANNOTATION}.WARNINGS | wc -l`" != "0" ]]
 then
 	controlMassiveInvPrefilteringLevel=`grep controlMassiveInvPrefilteringLevel ${ABRIDGED_ANNOTATION}.WARNINGS | cut -f 2`
 fi
 
-if [[ "`grep tumorMassiveInvFiteringLevel ${ABRIDGED_ANNOTATION}.WARNINGS | wc -l`" != "0" ]]
+if [[ "`grep tumorMassiveInvFilteringLevel ${ABRIDGED_ANNOTATION}.WARNINGS | wc -l`" != "0" ]]
 then
-        tumorMassiveInvFiteringLevel=`grep tumorMassiveInvFiteringLevel ${ABRIDGED_ANNOTATION}.WARNINGS | cut -f 2`
+        tumorMassiveInvFilteringLevel=`grep tumorMassiveInvFilteringLevel ${ABRIDGED_ANNOTATION}.WARNINGS | cut -f 2`
 fi
 
 echo "    \"controlMassiveInvPrefilteringLevel\": ${controlMassiveInvPrefilteringLevel}," >> $QC_JSON_FILE_TMP
-echo "    \"tumorMassiveInvFiteringLevel\": ${tumorMassiveInvFiteringLevel}," >> $QC_JSON_FILE_TMP
+echo "    \"tumorMassiveInvFilteringLevel\": ${tumorMassiveInvFilteringLevel}," >> $QC_JSON_FILE_TMP
 
 if [[ "`cat ${ABRIDGED_ANNOTATION}.WARNINGS | wc -l`" == "0" ]]
 then
@@ -80,18 +80,18 @@ rm ${ABRIDGED_ANNOTATION_TEMP}
 cut -f 1-3 ${ABRIDGED_ANNOTATION} | cat -n | sed 's/ //g' | awk -v OFS='\t'  '{print $2, $3, $4, $1}' > ${FILE_DUM}leftCoords
 ${BEDTOOLS_BINARY} intersect -a ${FILE_DUM}leftCoords -b ${intronExonRefBed} ${geneRefBedCancer} ${combinedSuperEnhancerRefBed} -loj  > ${FILE_DUM}directHits1Pre
 ${PYTHON_BINARY} ${TOOL_DIRECTHITCOLLAPSE_SCRIPT} ${FILE_DUM}directHits1Pre >${FILE_DUM}directHits1
-${BEDTOOLS_BINARY} closest -a ${FILE_DUM}leftCoords -b ${geneRefBed} -g ${chromSizesRef} -io -D ref -id -t last -k 1 | cut -f 8,9 > ${FILE_DUM}genesUpstream1
+${BEDTOOLS_BINARY} closest -a ${FILE_DUM}leftCoords -b ${geneRefBedCoding} -g ${chromSizesRef} -io -D ref -id -t last -k 1 | cut -f 8,9 > ${FILE_DUM}genesUpstream1
 ${BEDTOOLS_BINARY} closest -a ${FILE_DUM}leftCoords -b ${geneRefBedCancer} -g ${chromSizesRef} -io -D ref -id -t last -k 1 | cut -f 8,10 > ${FILE_DUM}genesUpstreamCancer1
-${BEDTOOLS_BINARY} closest -a ${FILE_DUM}leftCoords -b ${geneRefBed} -g ${chromSizesRef} -io -D ref -iu -t first -k 1 | cut -f 8,9 > ${FILE_DUM}genesDownstream1
+${BEDTOOLS_BINARY} closest -a ${FILE_DUM}leftCoords -b ${geneRefBedCoding} -g ${chromSizesRef} -io -D ref -iu -t first -k 1 | cut -f 8,9 > ${FILE_DUM}genesDownstream1
 ${BEDTOOLS_BINARY} closest -a ${FILE_DUM}leftCoords -b ${geneRefBedCancer} -g ${chromSizesRef} -io -D ref -iu -t first -k 1 | cut -f 8,10 > ${FILE_DUM}genesDownstreamCancer1
 
 cut -f 4-6 ${ABRIDGED_ANNOTATION} | cat -n | sed 's/ //g' | awk -v OFS='\t'  '{print $2, $3, $4, $1}' | sort -V -k1,1 -k2,2 -k3,3 -k4,4 > ${FILE_DUM}rightCoords
 cut -f4 ${FILE_DUM}rightCoords > ${FILE_DUM}lineOrder
 ${BEDTOOLS_BINARY} intersect -a ${FILE_DUM}rightCoords -b ${intronExonRefBed} ${geneRefBedCancer} ${combinedSuperEnhancerRefBed} -loj > ${FILE_DUM}directHits2Pre
 ${PYTHON_BINARY} ${TOOL_DIRECTHITCOLLAPSE_SCRIPT} ${FILE_DUM}directHits2Pre >${FILE_DUM}directHits2
-${BEDTOOLS_BINARY} closest -a ${FILE_DUM}rightCoords -b ${geneRefBed} -g ${chromSizesRef} -io -D ref -id -t last -k 1 | cut -f 8,9 > ${FILE_DUM}genesUpstream2
+${BEDTOOLS_BINARY} closest -a ${FILE_DUM}rightCoords -b ${geneRefBedCoding} -g ${chromSizesRef} -io -D ref -id -t last -k 1 | cut -f 8,9 > ${FILE_DUM}genesUpstream2
 ${BEDTOOLS_BINARY} closest -a ${FILE_DUM}rightCoords -b ${geneRefBedCancer} -g ${chromSizesRef} -io -D ref -id -t last -k 1 | cut -f 8,10 > ${FILE_DUM}genesUpstreamCancer2
-${BEDTOOLS_BINARY} closest -a ${FILE_DUM}rightCoords -b ${geneRefBed} -g ${chromSizesRef} -io -D ref -iu -t first -k 1 | cut -f 8,9 > ${FILE_DUM}genesDownstream2
+${BEDTOOLS_BINARY} closest -a ${FILE_DUM}rightCoords -b ${geneRefBedCoding} -g ${chromSizesRef} -io -D ref -iu -t first -k 1 | cut -f 8,9 > ${FILE_DUM}genesDownstream2
 ${BEDTOOLS_BINARY} closest -a ${FILE_DUM}rightCoords -b ${geneRefBedCancer} -g ${chromSizesRef} -io -D ref -iu -t first -k 1 | cut -f 8,10 > ${FILE_DUM}genesDownstreamCancer2
 
 paste ${FILE_DUM}lineOrder <(cut -f1,2 ${FILE_DUM}directHits2) ${FILE_DUM}genesUpstream2 ${FILE_DUM}genesUpstreamCancer2 ${FILE_DUM}genesDownstream2 ${FILE_DUM}genesDownstreamCancer2 | sort -V -k1,1 | cut -f2- > ${FILE_DUM}right
