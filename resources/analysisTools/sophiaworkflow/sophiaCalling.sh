@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-source ${CONFIG_FILE}
-
 if [ "$LOAD_MODULE" == true ]
 then
 	module load $MODULE_ENV

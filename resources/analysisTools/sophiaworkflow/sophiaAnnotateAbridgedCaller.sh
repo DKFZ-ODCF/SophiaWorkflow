@@ -1,5 +1,4 @@
 #!/bin/bash
-source ${CONFIG_FILE}
 
 if [ "$LOAD_MODULE" == true ]
 then
