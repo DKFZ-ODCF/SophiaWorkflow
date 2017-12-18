@@ -125,7 +125,7 @@
             </resourcesets>
             <input type="file" typeof="BasicBamFile" scriptparameter="BAMFILE"/>
             <input type="file" typeof="InsertSizesValueFile" scriptparameter="mergedIsizes"/>
-​            <input type="string" setby="callingCode" scriptparameter="defaultReadLength"/>
+            <input type="string" setby="callingCode" scriptparameter="defaultReadLength"/>
             <output type="file" typeof="SophiaOutputBedpe" scriptparameter="BPS_OUT"/>
         </tool>
 
@@ -143,6 +143,7 @@
                 <output type="file" typeof="AnnotationFilteredQJsonNoControl" scriptparameter="JSON_PREFIX"/>
             </output>
         </tool>
+
         <tool name="sophiaAnnotator" value="sophiaAnnotateAbridgedCaller.sh" basepath="sophiaworkflow">
             <resourcesets>
                 <rset size="s" memory="1g" cores="1" nodes="1" walltime="1h" queue="devel"/>

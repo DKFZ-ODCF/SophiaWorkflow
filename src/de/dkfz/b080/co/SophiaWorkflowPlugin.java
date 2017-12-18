@@ -7,8 +7,8 @@ import de.dkfz.roddy.plugins.BasePlugin;
  */
 public class SophiaWorkflowPlugin extends BasePlugin {
 
-    public static final String CURRENT_VERSION_STRING = "1.0.16";
-    public static final String CURRENT_VERSION_BUILD_DATE = "Fri Jun 09 13:29:58 CEST 2017";
+    public static final String CURRENT_VERSION_STRING = "1.2.16";
+    public static final String CURRENT_VERSION_BUILD_DATE = "Mon Dec 18 16:11:36 CET 2017";
 
     @Override
     public String getVersionInfo() {
