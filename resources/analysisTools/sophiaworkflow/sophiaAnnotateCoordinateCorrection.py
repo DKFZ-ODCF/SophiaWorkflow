@@ -1,4 +1,4 @@
-#!/ibios/tbi_cluster/13.1/x86_64/bin/python3.4
+#!/usr/bin/env python
 from sys import argv
 
 rightSideFile=argv[1]

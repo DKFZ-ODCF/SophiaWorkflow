@@ -13,8 +13,6 @@ fi
 
 ## ADDED TO TEST
 
-source python3sourceme
-
 # Get rid of the extension: .bed.gz This is done for most of the files in Roddy, but some are left here. We still
 # need to figure out, if the files should all be passed as parameters.
 tumorFileRaw=${tumorFile:0:${#tumorFile}-7}
