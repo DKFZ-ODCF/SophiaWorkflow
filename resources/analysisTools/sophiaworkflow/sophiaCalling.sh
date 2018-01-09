@@ -1,16 +1,5 @@
 #!/usr/bin/env bash
 
-if [ "$LOAD_MODULE" == true ]
-then
-	module load $MODULE_ENV
-	SAMTOOLS_BINARY=samtools
-	SOPHIA_ANNOTATION_BINARY=sophiaAnnotate
-	RSCRIPT_BINARY=Rscript
-	SAMTOOLS_BINARY=samtools
-	BEDTOOLS_BINARY=bedtools
-	PYTHON_BINARY=python3
-fi
-
 set -e
 
 BPS_OUT_TMP=${BPS_OUT}.tmp.gz

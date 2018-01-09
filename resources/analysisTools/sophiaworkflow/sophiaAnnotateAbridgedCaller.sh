@@ -1,16 +1,5 @@
 #!/bin/bash
 
-if [ "$LOAD_MODULE" == true ]
-then
-        module load $MODULE_ENV
-        SAMTOOLS_BINARY=samtools
-        SOPHIA_ANNOTATION_BINARY=sophiaAnnotate
-        RSCRIPT_BINARY=Rscript
-        SAMTOOLS_BINARY=samtools
-        BEDTOOLS_BINARY=bedtools
-        PYTHON_BINARY=python3
-fi
-
 ## ADDED TO TEST
 
 # Get rid of the extension: .bed.gz This is done for most of the files in Roddy, but some are left here. We still

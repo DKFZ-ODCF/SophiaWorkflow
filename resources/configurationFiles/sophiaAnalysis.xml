@@ -33,22 +33,16 @@
         <cvalue name='SOPHIA_DIR' value='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}' type='string'/>
 
         <!-- Software modules - if enabled these will over ride the binary definitions -->
-        <cvalue name='LOAD_MODULE' value='true' type='boolean'/>
+        <cvalue name="workflowEnvironmentScript" value="workflowEnvironment_tbiPbs" type="string"/>
+        <cvalue name='LOAD_MODULE' value='true' type='boolean' description="Only relevant for workflowEnvironmentScript=workflowEnvironment_tbiPbs"/>
         <cvalue name='MODULE_ENV' value='HIPO2_sv/v1' type='string'/>
 
-        <!-- Binaries -->
-        <cvalue name='PIPELINE_BASE' value='/tbi/cluster/13.1/x86_64/sophia/sophia-${version}' type='string' />
-        <cvalue name='version' value="34.0" type='string' />
-        <cvalue name='versionSuffix' value='${version}' type='string' />
-        <cvalue name="SOPHIA_BINARY" value="${PIPELINE_BASE}/sophia"/>
-        <cvalue name="ANNOTATION_PIPELINE_BASE" value="${PIPELINE_BASE}/sophiaAnnotate"/>
-        <cvalue name="SOPHIA_ANNOTATION_BINARY" value="${ANNOTATION_PIPELINE_BASE}/sophiaAnnotate"/>
-        <cvalue name="RSCRIPT_BINARY" value="Rscript-3.0.0"/>
-        <cvalue name="SAMTOOLS_BINARY" value="samtools-1.2"/>
-        <cvalue name="MBUFFER_BINARY" value="mbuffer"/>
-        <cvalue name="GZIP_BINARY" value="gzip"/>
-        <cvalue name="BEDTOOLS_BINARY" value="bedtools-2.24.0"/>
-        <cvalue name="PYTHON_BINARY" value="python3"/>
+        <!-- These variables are needed for the annotations files below.
+             Additionally, on the TBI PBS cluster they are used to compose the path to the Sophia binary. -->
+        <cvalue name="SOPHIA_VERSION" value="34.0" type="string"/>
+        <cvalue name='PIPELINE_BASE' value='/tbi/cluster/13.1/x86_64/sophia/sophia-${SOPHIA_VERSION}' type='string' />
+        <cvalue name="ANNOTATION_PIPELINE_BASE" value="${PIPELINE_BASE}/sophiaAnnotate"
+                description="Set this to the sophiaAnnotate directory in the Sophia installation that you use."/>
 
         <!-- ## Default file acces -->
         <cvalue name='outputFileGroup' value='B080'/>
@@ -78,7 +72,7 @@
         <cvalue name='repeatsRefBed' value='${REFERENCES_BASE}/repeatmasker_hg19_nostrand_nolength_sorted.bed.gz' type='string' />
         <cvalue name='chromSizesRef' value='${REFERENCES_BASE}/hg19_chromSizes_withContigsDecoys.genome' type='string' />
         <cvalue name='pidsInMref' value='3261' type='string' />
-        <cvalue name='mRef' value='${REFERENCES_BASE}/mergedMref_v${version}_${pidsInMref}_mergedBpCounts.bed.gz' type='string' />
+        <cvalue name='mRef' value='${REFERENCES_BASE}/mergedMref_v${SOPHIA_VERSION}_${pidsInMref}_mergedBpCounts.bed.gz' type='string' />
 
         <!-- PARAMTER VALUES -->
         <cvalue name='mapqThreshold' value='13' type='integer' />
@@ -101,7 +95,9 @@
         <cvalue name='germlineDbLimit' value='10' type='integer' />
 
     </configurationvalues>
-    <processingTools>
+    <processingtools>
+        <tool name="workflowEnvironment_tbiPbs" value="tbi-pbs.sh" basepath="sophiaworkflow/environments"/>"
+        <tool name="workflowEnvironment_tbiLsf" value="tbi-lsf.sh" basepath="sophiaworkflow/environments"/>"
 
         <!-- START NEW -->
         <tool name='fusionCandidatesScript' value='fusionCandidates.py' basepath="sophiaworkflow" />
@@ -159,7 +155,7 @@
                 <output type="file" typeof="AnnotationFilteredQJsonTmVsCntrl" scriptparameter="JSON_PREFIX"/>
             </output>
         </tool>
-    </processingTools>
+    </processingtools>
     <filenames package='de.dkfz.b080.co.files' filestagesbase='de.dkfz.b080.co.files.COFileStage'>
   <!--  <filename class='InsertSizesValueFile' derivedFrom='BasicBamFile' pattern='${outputAnalysisBaseDirectory}/${insertSizesOutputDirectory}/${sourcefileAtomicPrefix,delimiter="_"}_insertsize_plot.png_qcValues.txt'/> -->
         <filename class='InsertSizesValueFile' derivedFrom='BasicBamFile' pattern='${outputAnalysisBaseDirectory}/qualitycontrol/${sample}/merged/${insertSizesOutputDirectory}/${sourcefileAtomicPrefix,delimiter="_"}_insertsize_plot.png_qcValues.txt'/>
