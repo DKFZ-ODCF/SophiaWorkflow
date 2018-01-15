@@ -95,7 +95,7 @@
         <cvalue name='germlineDbLimit' value='10' type='integer' />
 
     </configurationvalues>
-    <processingtools>
+    <processingTools>
         <tool name="workflowEnvironment_tbiPbs" value="tbi-pbs.sh" basepath="sophiaworkflow/environments"/>"
         <tool name="workflowEnvironment_tbiLsf" value="tbi-lsf.sh" basepath="sophiaworkflow/environments"/>"
 
@@ -155,7 +155,7 @@
                 <output type="file" typeof="AnnotationFilteredQJsonTmVsCntrl" scriptparameter="JSON_PREFIX"/>
             </output>
         </tool>
-    </processingtools>
+    </processingTools>
     <filenames package='de.dkfz.b080.co.files' filestagesbase='de.dkfz.b080.co.files.COFileStage'>
   <!--  <filename class='InsertSizesValueFile' derivedFrom='BasicBamFile' pattern='${outputAnalysisBaseDirectory}/${insertSizesOutputDirectory}/${sourcefileAtomicPrefix,delimiter="_"}_insertsize_plot.png_qcValues.txt'/> -->
         <filename class='InsertSizesValueFile' derivedFrom='BasicBamFile' pattern='${outputAnalysisBaseDirectory}/qualitycontrol/${sample}/merged/${insertSizesOutputDirectory}/${sourcefileAtomicPrefix,delimiter="_"}_insertsize_plot.png_qcValues.txt'/>
