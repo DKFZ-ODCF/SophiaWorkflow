@@ -96,8 +96,8 @@
 
     </configurationvalues>
     <processingTools>
-        <tool name="workflowEnvironment_tbiPbs" value="tbi-pbs.sh" basepath="sophiaworkflow/environments"/>"
-        <tool name="workflowEnvironment_tbiLsf" value="tbi-lsf.sh" basepath="sophiaworkflow/environments"/>"
+        <tool name="workflowEnvironment_tbiPbs" value="tbi-pbs.sh" basepath="sophiaworkflow/environments"/>
+        <tool name="workflowEnvironment_tbiLsf" value="tbi-lsf.sh" basepath="sophiaworkflow/environments"/>
 
         <!-- START NEW -->
         <tool name='fusionCandidatesScript' value='fusionCandidates.py' basepath="sophiaworkflow" />
