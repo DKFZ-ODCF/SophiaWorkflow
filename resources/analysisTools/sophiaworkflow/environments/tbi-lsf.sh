@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-module load $MODULE_ENV
+module load $MODULE_ENV || throw 100 "Could not load module '$MODULE_ENV'"
 
 export PYTHON_BINARY=python
 

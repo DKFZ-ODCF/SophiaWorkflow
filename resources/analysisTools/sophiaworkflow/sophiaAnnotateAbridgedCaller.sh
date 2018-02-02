@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ## ADDED TO TEST
+set -o pipefail -e
 
 # Get rid of the extension: .bed.gz This is done for most of the files in Roddy, but some are left here. We still
 # need to figure out, if the files should all be passed as parameters.
@@ -13,7 +14,6 @@ ABRIDGED_ANNOTATION=${tumorFileRaw}_annotatedAbridged.bedpe
 ABRIDGED_ANNOTATION_TEMP=${ABRIDGED_ANNOTATION}.tmp
 ABRIDGED_ANNOTATION_CONTEXT=${tumorFileRaw}_annotatedAbridgedContext.bedpe
 FILE_DUM=${tumorFileRaw}_temp
-QC_JSON_FILE=${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/${JSON_PREFIX}qualitycontrol.json
 QC_JSON_FILE_TMP=${QC_JSON_FILE}.tmp
 #TEMPORARY FILES END
 
