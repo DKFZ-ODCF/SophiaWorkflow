@@ -11,7 +11,10 @@ def getIntronExonIndex(geneRawName):
     index=1
     intronStatus="intron" in geneChunks[-1] or geneName=="."
     if geneChunks[-1]!=".":
-        index=int(geneChunks[-1].split('intron')[-1])
+        if "intron" in geneChunks[-1]:
+            index=int(geneChunks[-1].split('intron')[-1])
+        elif "exon" in geneChunks[-1]:
+            index=int(geneChunks[-1].split('exon')[-1])
     return [geneName,index,intronStatus]
 
 lineIndices=set()
@@ -31,10 +34,10 @@ with open(preFilteredBedpe) as inputHandle:
                 eventType=lineChunks[8]
                 eventScore=int(lineChunks[9])
                 if lineChunks[0]==lineChunks[3] and lineChunks[11]!="INV":
-                    gene1Raw=lineChunks[18]
-                    gene2Raw=lineChunks[28]
-                    gene1ListPre=[getIntronExonIndex(x) for x in gene1Raw.split(',') if '_' in x]
-                    gene2ListPre=[getIntronExonIndex(x) for x in gene2Raw.split(',') if '_' in x]
+                    gene1Raw=lineChunks[20]
+                    gene2Raw=lineChunks[30]
+                    gene1ListPre=[getIntronExonIndex(x) for x in [y.split(';')[0] for y in gene1Raw.split(',')] if '_' in x]
+                    gene2ListPre=[getIntronExonIndex(x) for x in [y.split(';')[0] for y in gene2Raw.split(',')] if '_' in x]
                     for eventPair in product(gene1ListPre,gene2ListPre):
                         if eventPair[0][0]==eventPair[1][0]:
                             if eventPair[0][0]!=".":

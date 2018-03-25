@@ -1,4 +1,4 @@
-from sys import argv,stderr
+from sys import argv,stderr 
 from itertools import product
 preFilteredBedpe=argv[1]
 
@@ -16,5 +16,6 @@ with open(preFilteredBedpe) as inputHandle:
                 maxPos=max(int(lineChunks[1]),int(lineChunks[4]))
                 eventScore=int(lineChunks[9])
                 for iterPair in broadProd:
-                    print(lineChunks[0],minPos-iterPair[0],maxPos-1+iterPair[1],lineIndex,sep='\t')
+                    if (minPos-iterPair[0]) < maxPos-1+iterPair[1]:
+                        print(lineChunks[0],minPos-iterPair[0],maxPos-1+iterPair[1],lineIndex,sep='\t')
             lineIndex+=1

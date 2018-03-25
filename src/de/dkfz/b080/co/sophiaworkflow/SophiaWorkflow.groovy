@@ -3,14 +3,11 @@ package de.dkfz.b080.co.sophiaworkflow
 import de.dkfz.b080.co.common.WorkflowUsingMergedBams
 import de.dkfz.b080.co.files.BasicBamFile
 import de.dkfz.b080.co.files.COFileStageSettings
-import de.dkfz.roddy.StringConstants
+import de.dkfz.roddy.config.Configuration
 import de.dkfz.roddy.config.ConfigurationValue
-import de.dkfz.roddy.config.RecursiveOverridableMapContainerForConfigurationValues
 import de.dkfz.roddy.core.ExecutionContext
 import de.dkfz.roddy.core.ExecutionContextError
 import de.dkfz.roddy.knowledge.files.BaseFile
-import de.dkfz.roddy.knowledge.files.FileObject
-import de.dkfz.roddy.plugins.LibrariesFactory
 import groovy.transform.CompileStatic
 
 /**
@@ -25,30 +22,28 @@ class SophiaWorkflow extends WorkflowUsingMergedBams {
     public static final String BAMFILE_LIST = "bamfile_list"
 
     /**
-     * Load (create) the class for the insert sizes file.
-     * This class actually exists in AlignmentAndQCWorkflows, but we do not want to add unnecessary dependencies.
-     * Just use Roddys synthetic class capabilities here.
-     * @return
-     */
-    Class<BaseFile> loadISizesFileClass() {
-        LibrariesFactory.getInstance().loadRealOrSyntheticClass("InsertSizesValueFile", BaseFile.class as Class<FileObject>)
-    }
-
-    /**
-     * Load the insert sizes file for a given bam file.
-     * indexInBamList is only used, if the isizes files are passed as a cvalue
+     * Compose a LinkedHashMap with parameter values for (e.g.) tumor and control taken from the configuration.
+     * This simplifies the collection of configuration values with "tumor" and "control" prefixes. On the long
+     * run this should be substituted by getting the data from a metadata table. Default values are not implemented.
      *
+     * @param context
+     * @param sampleName        tumor, control, ...
      * @return
      */
-    BaseFile getISizesForBam(ExecutionContext context, BasicBamFile bam, int indexInBamList) {
-        def configurationValues = context.getConfigurationValues()
-        boolean isizesListIsSet = configurationValues.hasValue(ISIZES_LIST);
-        if (isizesListIsSet) {
-            List<String> isizesList = configurationValues.getString(ISIZES_LIST).split(StringConstants.SPLIT_SEMICOLON) as List<String>;
-            return BaseFile.constructSourceFile(loadISizesFileClass(), new File(isizesList[indexInBamList]), context, bam.fileStage)
-        } else {
-            return BaseFile.constructManual(loadISizesFileClass(), new BasicBamFile(bam)) as BaseFile
+    static LinkedHashMap<String, String> getBamParameters(Configuration config, String sampleName) {
+        // TODO: Make this workflow run with a metadata table. Probably the WorkflowUsingMergedBams has to be adapted (currently it only accepts a single pair!
+        // if (Roddy.isMetadataCLOptionSet())
+        //    SophiaMetadataTable metadataTable = new SophiaMetadataTable(MetadataTableFactory.getTable(context.analysis))
+
+        LinkedHashMap<String, String> result = new LinkedHashMap()
+        ["defaultReadLength",
+         "medianIsize",
+         "stdIsizePercentage",
+         "properPairRatio"
+        ].collectEntries(result) { varname ->
+            new MapEntry(varname, config.configurationValues.get("${sampleName}${varname.capitalize()}").toString())
         }
+        return result
     }
 
     @Override
@@ -57,21 +52,20 @@ class SophiaWorkflow extends WorkflowUsingMergedBams {
 
         context.configuration.configurationValues << new ConfigurationValue("tumorSample", (bamTumorMerged.fileStage as COFileStageSettings).sample.name)
 
-        String tumorDefaultReadLength = context.configuration.configurationValues.get("tumorDefaultReadLength")
-        String controlDefaultReadLength= context.configuration.configurationValues.get("controlDefaultReadLength")
-
-
         if (fullWorkflow) { // Control and tumor
             context.configuration.configurationValues << new ConfigurationValue(ANALYSIS_TAG, "tumorControl")
             context.configuration.configurationValues << new ConfigurationValue("controlSample", (bamControlMerged.fileStage as COFileStageSettings).sample.name)
 
-            BaseFile sophiaControlFile = call(TOOL_SOPHIA, bamControlMerged, getISizesForBam(context, bamControlMerged, 0),"defaultReadLength=${controlDefaultReadLength}") as BaseFile
-            BaseFile sophiaTumorFile = call(TOOL_SOPHIA, bamTumorMerged, getISizesForBam(context, bamTumorMerged, 1),"defaultReadLength=${tumorDefaultReadLength}") as BaseFile
+            BaseFile sophiaControlFile =
+                    call(TOOL_SOPHIA, bamControlMerged, getBamParameters(context.configuration, "control")) as BaseFile
+            BaseFile sophiaTumorFile =
+                    call(TOOL_SOPHIA, bamTumorMerged, getBamParameters(context.configuration, "tumor")) as BaseFile
 
             call("sophiaAnnotator", sophiaControlFile, sophiaTumorFile)
         } else { //NoControl!
             context.getConfiguration().getConfigurationValues().add(new ConfigurationValue(ANALYSIS_TAG, "tumorOnly"))
-            BaseFile sophiaTumorFile = call(TOOL_SOPHIA, bamTumorMerged, getISizesForBam(context, bamTumorMerged, 0),"defaultReadLength=${tumorDefaultReadLength}") as BaseFile
+            BaseFile sophiaTumorFile =
+                    call(TOOL_SOPHIA, bamTumorMerged, getBamParameters(context.configuration, "tumor")) as BaseFile
 
             call("sophiaAnnotatorNoControl", sophiaTumorFile)
         }
@@ -83,7 +77,7 @@ class SophiaWorkflow extends WorkflowUsingMergedBams {
         if (!initialBamCheck)
             return false
 
-        BasicBamFile[] bamFiles = super.getInitialBamFiles(context)
+        loadInitialBamFilesForDataset(context)
 
         def configurationValues = context.getConfigurationValues()
         boolean isizesListIsSet = configurationValues.hasValue(ISIZES_LIST)
@@ -93,19 +87,6 @@ class SophiaWorkflow extends WorkflowUsingMergedBams {
             return false
         }
 
-        boolean isizesfound = true;
-        for (int i = 0; i < bamFiles.size(); i++) {
-            if (!bamFiles[i]) // Can be null for nocontrol
-                continue
-
-            def isizesFile = getISizesForBam(context, bamFiles[i], i).path
-            boolean found = context.fileIsAccessible(isizesFile)
-            if (!found) {
-                context.addErrorEntry(ExecutionContextError.EXECUTION_NOINPUTDATA.expand("The insert sizes file ${isizesFile.path} could not be found."))
-                isizesfound = false
-            }
-        }
-
-        return isizesfound
+        return true
     }
 }

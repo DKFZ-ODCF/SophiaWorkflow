@@ -5,11 +5,26 @@ pid=args[2]
 scoreThreshold=as.numeric(args[3])
 
 annos=read.delim(annosFile,header = TRUE,stringsAsFactors = FALSE)
+
+annos[,1]=as.character(annos[,1])
+annos[,4]=as.character(annos[,4])
+annos$chrom1PreDecoyRemap=as.character(annos$chrom1PreDecoyRemap)
+annos$chrom2PreDecoyRemap=as.character(annos$chrom2PreDecoyRemap)
+
 annos=annos[annos$eventScore>=scoreThreshold,]
-annos=annos[!(annos[,1]=="hs37d5" & annos[,4]=="hs37d5"),]
+annos=annos[!(annos$chrom1PreDecoyRemap=="hs37d5" & annos$chrom2PreDecoyRemap=="hs37d5"),]
+annos=annos[!(annos$chrom1=="hs37d5" & annos$chrom2PreDecoyRemap=="hs37d5"),]
+annos=annos[!(annos$chrom1PreDecoyRemap=="hs37d5" & annos$chrom2=="hs37d5"),]
+annos=annos[!(annos[,1]=="X" & annos[,4]=="Y"),]
+annos=annos[!(annos[,1]=="Y" & annos[,4]=="X"),]
+
+annos=annos[!((startsWith(annos[,1],"h") |startsWith(annos[,1],"G") | startsWith(annos[,1],"N") | startsWith(annos[,1],"H"))  & (startsWith(annos[,4],"h") | startsWith(annos[,4],"G") | startsWith(annos[,4],"N") | startsWith(annos[,4],"H"))),]
+
 annos=annos[!(annos[,1]=="hs37d5" & grepl("UNKNOWN",annos[,8])),]
+annos=annos[!(startsWith(annos[,1],"G") & grepl("UNKNOWN",annos[,8])),]
+annos=annos[!(startsWith(annos[,1],"N") & grepl("UNKNOWN",annos[,8])),]
 if(nrow(annos)==0){
-	stop()
+    stop()
 }
 annos$dummyChromosome=rep(FALSE,nrow(annos))
 
@@ -21,7 +36,7 @@ if(any(mtLocs)){
   annos$dummyChromosome[mtLocs]=TRUE  
 }
 
-decoyLocs=annos[,4]=="hs37d5"
+decoyLocs=annos[,4]=="hs37d5" | startsWith(annos[,4],"G") | startsWith(annos[,4],"N")
 if(any(decoyLocs)){
   annos[decoyLocs,4]=annos[decoyLocs,1]
   annos[decoyLocs,5]=annos[decoyLocs,3]
@@ -29,7 +44,7 @@ if(any(decoyLocs)){
   annos$svtype[decoyLocs]="UNKNOWN_DECOY"
   annos$dummyChromosome[decoyLocs]=TRUE
 }
-decoyLocs2=annos[,1]=="hs37d5"
+decoyLocs2=annos[,1]=="hs37d5" | startsWith(annos[,1],"G") | startsWith(annos[,1],"N")
 if(any(decoyLocs2)){
 	annos[decoyLocs2,1]=annos[decoyLocs2,4]
 	annos[decoyLocs2,2]=annos[decoyLocs2,6]
@@ -37,6 +52,16 @@ if(any(decoyLocs2)){
 	annos$svtype[decoyLocs2]="UNKNOWN_DECOY"
 	annos$dummyChromosome[decoyLocs2]=TRUE
 }
+
+telInsLocs=(annos[,4]=="5" & annos[,5] < 11890)
+if(any(telInsLocs)){
+	annos[telInsLocs,4]=annos[telInsLocs,1]
+	annos[telInsLocs,5]=annos[telInsLocs,2]
+	annos[telInsLocs,6]=annos[telInsLocs,3]+1
+	annos$svtype[telInsLocs]="TELINS"
+	annos$dummyChromosome[telInsLocs]=TRUE
+}
+
 
 annos$clonality=rep(0,nrow(annos))
 unknownLocs1=annos$clonalityRatio1=="UNKNOWN"
@@ -62,12 +87,17 @@ annos$scaledClonality=annos$clonality/(quantile((annos$clonality))[[4]])
 annos$scaledClonality[annos$scaledClonality > 1] <- 1
 
 coords1=annos[,1:3]
+coords1[,2]=as.numeric(coords1[,2])
 coords1[,1]=paste0("chr",coords1[,1])
 coords2=annos[,4:6]
+coords2[,2]=as.numeric(coords2[,2])
 coords2[,1]=paste0("chr",coords2[,1])
+
+colnames(coords1)=c("chr","start","end")
+colnames(coords2)=c("chr","start","end")
 eventTypes=annos$svtype
 eventInversion=annos$eventInversion
-newInversions=eventTypes!="UNKNOWN_DECOY"&eventTypes!="TRA" & eventTypes!="INV" & eventInversion=="INV"
+newInversions=eventTypes!="UNKNOWN_DECOY"&eventTypes!="TELINS"&eventTypes!="TRA" & eventTypes!="INV" & eventInversion=="INV"
 eventTypes[newInversions]="INV"
 
 smallEventSelection=!annos$dummyChromosome & !is.na(annos$eventSize) & annos$eventSize < 9e6
@@ -84,6 +114,7 @@ invLocs=eventTypes=="INV"
 delLocs=eventTypes=="DEL"
 dupLocs=eventTypes=="DUP"
 traLocs=eventTypes=="TRA"
+telInsLocs=eventTypes=="TELINS"
 otherLocs=eventTypes=="UNKNOWN" | eventTypes=="UNKNOWN_DECOY"
 
 if(any(invLocs)){
@@ -106,23 +137,19 @@ if(any(otherLocs)){
 eventColors[otherLocs]=rgb(t(col2rgb("gray"))/255, alpha = alphas[otherLocs])
 eventScaledColors[otherLocs]=rgb(t(col2rgb("gray"))/255, alpha = scaledAlphas[otherLocs])
 }
-unscaledOutput=paste(annosFile,"score",scoreThreshold,"unscaled.pdf",sep="_")
-pdf(unscaledOutput)
-circos.initializeWithIdeogram()
-circos.par(points.overflow.warning=FALSE)
-title(paste0(pid," score>=",scoreThreshold, " unscaled"))
-circos.genomicLink(coords1[largeEventSelection,], coords2[largeEventSelection,],col = eventColors[largeEventSelection])
-circos.genomicLink(coords1[mediumEventSelection,], coords2[mediumEventSelection,],col = eventColors[mediumEventSelection],h=0.15)
-circos.genomicLink(coords1[smallEventSelection,], coords2[smallEventSelection,],col = eventColors[smallEventSelection],h=0.05)
-dev.off()
-circos.clear()
+if(any(telInsLocs)){
+eventColors[telInsLocs]=rgb(t(col2rgb("purple"))/255, alpha = alphas[telInsLocs])
+eventScaledColors[telInsLocs]=rgb(t(col2rgb("purple"))/255, alpha = scaledAlphas[telInsLocs])
+}
+
+
 scaledOutput=paste(annosFile,"score",scoreThreshold,"scaled.pdf",sep="_")
 pdf(scaledOutput)
 circos.initializeWithIdeogram()
 circos.par(points.overflow.warning=FALSE)
-title(paste0(pid," score>=",scoreThreshold, " scaled"))
-circos.genomicLink(coords1[largeEventSelection,], coords2[largeEventSelection,],col = eventScaledColors[largeEventSelection])
-circos.genomicLink(coords1[mediumEventSelection,], coords2[mediumEventSelection,],col = eventScaledColors[mediumEventSelection],h=0.15)
-circos.genomicLink(coords1[smallEventSelection,], coords2[smallEventSelection,],col = eventScaledColors[smallEventSelection],h=0.05)
+title(pid)
+circos.genomicLink(coords1[largeEventSelection,], coords2[largeEventSelection,], col = eventScaledColors[largeEventSelection])
+circos.genomicLink(coords1[mediumEventSelection,], coords2[mediumEventSelection,], col = eventScaledColors[mediumEventSelection],h=0.15)
+circos.genomicLink(coords1[smallEventSelection,], coords2[smallEventSelection,], col = eventScaledColors[smallEventSelection],h=0.05)
 dev.off()
 circos.clear()  

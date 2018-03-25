@@ -6,6 +6,7 @@
                usedToolFolders="sophiaworkflow,tools"
                cleanupScript="cleanupScript">
     <configurationvalues>
+
         <!-- ## Imported from cofilenames -->
         <cvalue name='sampleDirectory' value='${inputBaseDirectory}/${pid}/${sample}/${library}/${SEQUENCER_PROTOCOL}' type='path'/>
         <cvalue name='sequenceDirectory' value='${sampleDirectory}/${run}/sequence' type='path'/>
@@ -33,13 +34,17 @@
         <cvalue name='SOPHIA_DIR' value='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}' type='string'/>
 
         <!-- Software modules - if enabled these will over ride the binary definitions -->
-        <cvalue name="workflowEnvironmentScript" value="workflowEnvironment_tbiPbs" type="string"/>
+        <cvalue name="workflowEnvironmentScript" value="workflowEnvironment_tbiLsf" type="string"/>
         <cvalue name='LOAD_MODULE' value='true' type='boolean' description="Only relevant for workflowEnvironmentScript=workflowEnvironment_tbiPbs"/>
-        <cvalue name='MODULE_ENV' value='HIPO2_sv/v1' type='string'/>
+        <cvalue name='MODULE_ENV' value='HIPO2_sv/v1' type='string' description="Only relevant for some Sophia versions (<35.0)."/>
 
         <!-- These variables are needed for the annotations files below.
-             Additionally, on the TBI PBS cluster they are used to compose the path to the Sophia binary. -->
-        <cvalue name="SOPHIA_VERSION" value="34.0" type="string"/>
+             Additionally, on the TBI clusters they are used to compose the path to the Sophia binary. -->
+        <cvalue name="SAMTOOLS_VERSION" value="1.6" type="string"/>
+        <cvalue name="SOPHIA_VERSION" value="35.0" type="string"/>
+        <cvalue name="BEDTOOLS_VERSION" value="2.24.0" type="string"/>
+        <cvalue name="PYTHON_VERSION" value="3.6.0" type="string"/>
+        <cvalue name="R_VERSION" value="3.4.2" type="string"/>
         <cvalue name='PIPELINE_BASE' value='/tbi/cluster/13.1/x86_64/sophia/sophia-${SOPHIA_VERSION}' type='string' />
         <cvalue name="ANNOTATION_PIPELINE_BASE" value="${PIPELINE_BASE}/sophiaAnnotate"
                 description="Set this to the sophiaAnnotate directory in the Sophia installation that you use."/>
@@ -54,8 +59,7 @@
         <!-- Sophia specific values -->
 
         <!-- ANNOTATION HEADER -->
-        <!-- <cvalue name="STANDARDHEADER" value='"#chrom1\tstart1\tend1\tchrom2\tstart2\tend2\tsomaticity1\tsomaticity2\tsvtype\teventScore\teventSize\teventInversion\tevidence1\tclonalityRatio1\tevidence2\tclonalityRatio2\tsource1\tsource2\tgene1\tnearestCodingGeneUpstream1\tnearestCodingGeneUpstreamDistance1\tnearestCodingGeneDownstream1\tnearestCodingGeneownstreamDistance1\tgene2\tnearestCodingGeneUpstream2\tnearestCodingGeneUpstreamDistance2\tnearestCodingGeneDownstream2\tnearestCodingGeneownstreamDistance2"' description=""/>-->
-        <cvalue name="STANDARDHEADER" value='"#chrom1\tstart1\tend1\tchrom2\tstart2\tend2\tsomaticity1\tsomaticity2\tsvtype\teventScore\teventSize\teventInversion\tevidence1\tclonalityRatio1\tevidence2\tclonalityRatio2\tsource1\tsource2\tgene1\tcancerGene1\tnearestCodingGeneUpstream1\tnearestCodingGeneUpstreamDistance1\tnearestCancerGeneUpstream1\tnearestCancerGeneUpstreamDistance1\tnearestCodingGeneDownstream1\tnearestCodingGeneDownstreamDistance1\tnearestCancerGeneDownstream1\tnearestCancerGeneDownstreamDistance1\tgene2\tcancerGene2\tnearestCodingGeneUpstream2\tnearestCodingGeneUpstreamDistance2\tnearestCancerGeneUpstream2\tnearestCancerGeneUpstreamDistance2\tnearestCodingGeneDownstream2\tnearestCodingGeneDownstreamDistance2\tnearestCancerGeneDownstream2\tnearestCancerGeneDownstreamDistance2\tdbSUPERenhancer1\tdbSUPERenhancer2\trescuedEnhancerHitCandidate\tTADindices\taffectedCodingGenesTADestimate\taffectedCancerGenesTADestimate"' description=""/>
+        <cvalue name="STANDARDHEADER" value='"#chrom1\tstart1\tend1\tchrom2\tstart2\tend2\tsomaticity1\tsomaticity2\tsvtype\teventScore\teventSize\teventInversion\tevidence1\tclonalityRatio1\tevidence2\tclonalityRatio2\tsource1\tsource2\toverhang1\toverhang2\tgene1\tcancerGene1\tnearestCodingGeneUpstream1\tnearestCodingGeneUpstreamDistance1\tnearestCancerGeneUpstream1\tnearestCancerGeneUpstreamDistance1\tnearestCodingGeneDownstream1\tnearestCodingGeneDownstreamDistance1\tnearestCancerGeneDownstream1\tnearestCancerGeneDownstreamDistance1\tgene2\tcancerGene2\tnearestCodingGeneUpstream2\tnearestCodingGeneUpstreamDistance2\tnearestCancerGeneUpstream2\tnearestCancerGeneUpstreamDistance2\tnearestCodingGeneDownstream2\tnearestCodingGeneDownstreamDistance2\tnearestCancerGeneDownstream2\tnearestCancerGeneDownstreamDistance2\tdbSUPERenhancer1\tdbSUPERenhancer2\trescuedEnhancerHitCandidate\tTADindices\taffectedGenesTADestimate\taffectedCancerGenesTADestimate\tchrom1PreDecoyRemap\tstart1PreDecoyRemap\tend1PreDecoyRemap\tchrom2PreDecoyRemap\tstart2PreDecoyRemap\tend2PreDecoyRemap"' description=""/>
 
         <!-- DATABASES AND REFERENCE FILES -->
         <cvalue name='REFERENCES_BASE' value='${ANNOTATION_PIPELINE_BASE}/annotationMaterials/' type='string' />
@@ -82,8 +86,6 @@
         <cvalue name='lowQualOverhangThreshold' value='5' type='integer' />
         <cvalue name='isizeSigmaThreshold' value='5' type='integer' />
         <cvalue name='bpSupportThreshold' value='3' type='integer' />
-        <cvalue name='tumorDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
-        <cvalue name='controlDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
         <cvalue name='smallEventThreshold' value='5000' type='string' />
         <cvalue name='artifactLoFreq' value='33' type='integer' />
         <cvalue name='artifactHiFreq' value='66' type='integer' />
@@ -91,8 +93,36 @@
         <cvalue name='clonalityStrictLoFreq' value='20' type='integer' />
         <cvalue name='clonalityHiFreq' value='85' type='integer' />
         <cvalue name='bpFreq' value='5' type='integer' />
-        <cvalue name='germlineFuzziness' value='2' type='integer' />
+        <cvalue name='germlineFuzziness' value='3' type='integer' />
         <cvalue name='germlineDbLimit' value='10' type='integer' />
+
+        <!-- Sample-specific parameter values -->
+        <cvalue name="tumorMedianIsize" value="" description="Median insert size."/>
+        <cvalue name="controlMedianIsize" value="" description="Median insert size."/>
+        <cvalue name="tumorStdIsizePercentage" value="" description=""/>
+        <cvalue name="controlStdIsizePercentage" value="" description=""/>
+        <cvalue name="tumorProperPairRatio" value="" description="Ratio of properly paired alignment pairs."/>
+        <cvalue name="controlProperPairRatio" value="" description="Ratio of properly paired alignment pairs."/>
+        <cvalue name='tumorDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
+        <cvalue name='controlDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
+
+        <!-- Settings for metadata table -->
+        <cvalue name="datasetCol" value="PID" tags="mandatory"
+                description="Datasets (e.g. patient ID). Default: PID"/>
+        <cvalue name="fileCol" value="BAM" tags="mandatory"
+                description="BAM file to use as input. Default if undefined: Error!"/>
+        <cvalue name="sampleCol" value="Sample" tags="mandatory"
+                description="Sample name. Default: Sample. Default if undefined: Error!"/>
+        <cvalue name="sampleClassCol" value="SampleClass" tags="mandatory"
+                description="Sample class, reference/control or probe/tumor. Default if undefined: Error!"/>
+        <cvalue name="defaultReadLengthCol" value="DefaultReadLength"
+                description="Default: ReadLayout. Default if undefined: paired."/>
+        <cvalue name="medianIsizeCol" value="MedianIsize"
+                description="Default: Run"/>
+        <cvalue name="stdIsizePercentageCol" value="StdIsizePercentage"
+                description="Default if undefined: "/>
+        <cvalue name="properPairRatioCol" value="ProperPairRatio"
+                description="Default if undefined: "/>
 
     </configurationvalues>
     <processingTools>
@@ -109,6 +139,7 @@
         <tool name='directhitcollapseScript' value='intersectionCollapsing.py' basepath="sophiaworkflow" />
         <tool name='intrachromosomaleventpicker' value='getIntrachromosomalRanges.py' basepath="sophiaworkflow" />
         <tool name='tadannotationScript' value='tadIntersections.py' basepath="sophiaworkflow" />
+        <tool name='decoyMapperScript' value="decoyMapper.py" basepath="sophiaworkflow"/>
         <!-- END NEW -->
 
         <tool name="circlizeScript" value="circlizeEvents.R" basepath="sophiaworkflow"/>
@@ -116,34 +147,32 @@
 
         <tool name="sophia" value="sophiaCalling.sh" basepath="sophiaworkflow">
             <resourcesets>
-                <rset size="s" memory="1g" cores="2" nodes="1" walltime="3h" queue="devel"/>
-                <rset size="l" memory="1g" cores="2" nodes="1" walltime="120h"/>
+                <rset size="s" memory="2g" cores="2" nodes="1" walltime="3h" queue="devel"/>
+                <rset size="l" memory="2g" cores="2" nodes="1" walltime="120h"/>
             </resourcesets>
             <input type="file" typeof="BasicBamFile" scriptparameter="BAMFILE"/>
-            <input type="file" typeof="InsertSizesValueFile" scriptparameter="mergedIsizes"/>
-            <input type="string" setby="callingCode" scriptparameter="defaultReadLength"/>
             <output type="file" typeof="SophiaOutputBedpe" scriptparameter="BPS_OUT"/>
         </tool>
 
         <tool name="sophiaAnnotatorNoControl" value="sophiaAnnotateAbridgedCaller.sh" basepath="sophiaworkflow">
             <resourcesets>
-                <rset size="s" memory="1g" cores="1" nodes="1" walltime="1h" queue="devel"/>
-                <rset size="l" memory="4g" cores="1" nodes="1" walltime="8h"/>
+                <rset size="s" memory="8g" cores="1" nodes="1" walltime="1h" queue="devel"/>
+                <rset size="l" memory="8g" cores="1" nodes="1" walltime="8h"/>
             </resourcesets>
             <input type="file" typeof="SophiaOutputBedpe" scriptparameter="tumorFile"/>
             <output type="tuple">
                 <output type="file" typeof="AnnotationFilteredGermlineBedpeFileNoControl" scriptparameter="BEDPE_RESULT_FILE_FILTERED_GERMLINE"/>
                 <output type="file" typeof="AnnotationFilteredBedpeFileNoControl" scriptparameter="BEDPE_RESULT_FILE_FILTERED"/>
                 <output type="file" typeof="AnnotationFilteredSomaticBedpeFileNoControl" scriptparameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC"/>
-                <output type="file" typeof="AnnotationFilteredSomaticBedpeFileNoControlACEseq" scriptparameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC_ACESEQ"/>
+                <output type="file" typeof="AnnotationFilteredSomaticBedpeFileNoControlACEseq" scriptparameter="BEDPE_RESULT_FILE_FILTERED_ACESEQ"/>
                 <output type="file" typeof="AnnotationFilteredQJsonNoControl" scriptparameter="QC_JSON_FILE"/>
             </output>
         </tool>
 
         <tool name="sophiaAnnotator" value="sophiaAnnotateAbridgedCaller.sh" basepath="sophiaworkflow">
             <resourcesets>
-                <rset size="s" memory="1g" cores="1" nodes="1" walltime="1h" queue="devel"/>
-                <rset size="l" memory="4g" cores="1" nodes="1" walltime="8h"/>
+                <rset size="s" memory="8g" cores="1" nodes="1" walltime="1h" queue="devel"/>
+                <rset size="l" memory="8g" cores="1" nodes="1" walltime="8h"/>
             </resourcesets>
             <input type="file" typeof="SophiaOutputBedpe" scriptparameter="bloodFile"/>
             <input type="file" typeof="SophiaOutputBedpe" scriptparameter="tumorFile"/>
@@ -153,6 +182,9 @@
                 <output type="file" typeof="AnnotationFilteredSomaticBedpeFileTmVsCntrl" scriptparameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC"/>
                 <output type="file" typeof="AnnotationFilteredSomaticBedpeFileTmVsCntrlACEseq" scriptparameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC_ACESEQ"/>
                 <output type="file" typeof="AnnotationFilteredQJsonTmVsCntrl" scriptparameter="QC_JSON_FILE"/>
+                <output type="file"
+                        typeof="AnnotationFilteredSomaticBedpeFileTmVsCntrlACEseqOverhangCandidates"
+                        scriptparameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES"/>
             </output>
         </tool>
     </processingTools>
@@ -186,6 +218,8 @@
                   pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_filtered_somatic_minEventScore3.tsv'/>
         <filename class='AnnotationFilteredQJsonTmVsCntrl'                     derivedFrom='SophiaOutputBedpe'
                   pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_${tumorSample}-${controlSample}.qualitycontrol.json'/>
+        <filename class='AnnotationFilteredSomaticBedpeFileTmVsCntrlACEseqOverhangCandidates' onScriptParameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES"
+                  pattern="${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_${tumorSample}-${controlSample}_filtered_somatic_overhangCandidates.tsv"/>
 
     </filenames>
 </configuration>

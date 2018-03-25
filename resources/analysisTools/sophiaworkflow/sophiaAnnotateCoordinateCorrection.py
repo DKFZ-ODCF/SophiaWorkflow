@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/ibios/tbi_cluster/13.1/x86_64/bin/python3.4
 from sys import argv
 
-rightSideFile=argv[1]
+righSideFile=argv[1]
 
-with open(rightSideFile) as f:
+with open(righSideFile) as f:
     for line in f:
         lineChunks=line.rstrip().split('\t')
         geneMatches=",".join(set(lineChunks[4].split(',')))

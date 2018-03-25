@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/ibios/tbi_cluster/13.1/x86_64/bin/python3.4
 from sys import argv,stderr
 from sys import exit as sysexit
 inputPath=argv[1]

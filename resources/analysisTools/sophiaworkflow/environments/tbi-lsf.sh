@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-module load $MODULE_ENV || throw 100 "Could not load module '$MODULE_ENV'"
+
+module load "samtools/$SAMTOOLS_VERSION" || throw 100 "Could not load module '$MODULE_ENV'"
+module load "SOPHIA/$SOPHIA_VERSION" || throw 100 "Could not load module '$MODULE_ENV'"
+module load "bedtools/$BEDTOOLS_VERSION"|| throw 100 "Could not load module '$MODULE_ENV'"
+module load "python/$PYTHON_VERSION" || throw 100 "Could not load module '$MODULE_ENV'"
+module load "R/$R_VERSION" || throw 100 "Could not load module '$MODULE_ENV'"
 
 export PYTHON_BINARY=python
 

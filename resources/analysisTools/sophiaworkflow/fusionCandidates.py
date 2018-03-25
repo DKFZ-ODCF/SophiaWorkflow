@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/ibios/tbi_cluster/13.1/x86_64/bin/python3.4
 import fileinput
 import re
 import itertools
@@ -11,10 +11,11 @@ def natural_sort(l):
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
     return sorted(l, key = alphanum_key)
 def rawGeneName(extendedGeneName):
+    extendedGeneName=extendedGeneName.split(';')[0]
     if '_' in extendedGeneName:
-        return '_'.join(extendedGeneName.split('_')[:-1])
+        return '_'.join(extendedGeneName.split('_')[:-1]).split('|')[0]
     else:
-        return extendedGeneName
+        return extendedGeneName.split('|')[0]
 
 def getDirectFusion(gene1Raw,gene2Raw):
     if gene1Raw in {".",""} and gene2Raw in {".",""}:
@@ -68,62 +69,62 @@ for line in fileinput.input():
         indirectFusionCandidatesRightCancerLeftAny=""
         indirectFusionCandidatesAny=""
         lineChunks=line.rstrip().split('\t')
-        gene1Raw=lineChunks[18]
-        gene1RawCancer=lineChunks[19]
-        gene1NearestUpstreamRaw=lineChunks[20]
+        gene1Raw=','.join([x.split(';')[0] for x in lineChunks[20].split(',')])
+        gene1RawCancer=','.join([x.split(';')[0] for x in lineChunks[21].split(',')])
+        gene1NearestUpstreamRaw=lineChunks[22]
         if gene1NearestUpstreamRaw not in {'','.'}:
-            gene1NearestUpstreamDistance=int(lineChunks[21])
+            gene1NearestUpstreamDistance=int(lineChunks[23])
             if gene1NearestUpstreamDistance>MAXDISTANCE:
                 gene1NearestUpstreamRaw=""
         else:
             gene1NearestUpstreamRaw=""
-        gene1NearestUpstreamCancer=lineChunks[22]
+        gene1NearestUpstreamCancer=','.join([x.split(';')[0] for x in lineChunks[24].split(',')])
         if gene1NearestUpstreamCancer not in {'','.'}:
-            gene1NearestUpstreamCancerDistance=int(lineChunks[23])
+            gene1NearestUpstreamCancerDistance=int(lineChunks[25])
             if gene1NearestUpstreamCancerDistance>MAXDISTANCE:
                 gene1NearestUpstreamCancer=""
         else:
             gene1NearestUpstreamCancer=""
-        gene1NearestDownstreamRaw=lineChunks[24]
+        gene1NearestDownstreamRaw=','.join([x.split(';')[0] for x in lineChunks[26].split(',')])
         if gene1NearestDownstreamRaw not in {'','.'}:
-            gene1NearestDownstreamDistance=int(lineChunks[25])
+            gene1NearestDownstreamDistance=int(lineChunks[27])
             if gene1NearestDownstreamDistance>MAXDISTANCE:
                 gene1NearestDownstreamRaw=""
         else:
             gene1NearestDownstreamRaw=""
-        gene1NearestDownstreamCancer=lineChunks[26]
+        gene1NearestDownstreamCancer=','.join([x.split(';')[0] for x in lineChunks[28].split(',')])
         if gene1NearestDownstreamCancer not in {'','.'}:
-            gene1NearestDownstreamCancerDistance=int(lineChunks[27])
+            gene1NearestDownstreamCancerDistance=int(lineChunks[29])
             if gene1NearestDownstreamCancerDistance>MAXDISTANCE:
                 gene1NearestDownstreamCancer=""
         else:
             gene1NearestDownstreamCancer=""
-        gene2Raw=lineChunks[28]
-        gene2RawCancer=lineChunks[29]
-        gene2NearestUpstreamRaw=lineChunks[30]
+        gene2Raw=','.join([x.split(';')[0] for x in lineChunks[30].split(',')])
+        gene2RawCancer=','.join([x.split(';')[0] for x in lineChunks[31].split(',')])
+        gene2NearestUpstreamRaw=','.join([x.split(';')[0] for x in lineChunks[32].split(',')])
         if gene2NearestUpstreamRaw not in {'','.'}:
-            gene2NearestUpstreamDistance=int(lineChunks[31])
+            gene2NearestUpstreamDistance=int(lineChunks[33])
             if gene2NearestUpstreamDistance>MAXDISTANCE:
                 gene2NearestUpstreamRaw=""
         else:
             gene2NearestUpstreamRaw=""
-        gene2NearestUpstreamCancer=lineChunks[32]
+        gene2NearestUpstreamCancer=','.join([x.split(';')[0] for x in lineChunks[34].split(',')])
         if gene2NearestUpstreamCancer not in {'','.'}:
-            gene2NearestUpstreamCancerDistance=int(lineChunks[33])
+            gene2NearestUpstreamCancerDistance=int(lineChunks[35])
             if gene2NearestUpstreamCancerDistance>MAXDISTANCE:
                 gene2NearestUpstreamCancer=""
         else:
             gene2NearestUpstreamCancer=""
-        gene2NearestDownstreamRaw=lineChunks[34]
+        gene2NearestDownstreamRaw=','.join([x.split(';')[0] for x in lineChunks[36].split(',')])
         if gene2NearestDownstreamRaw not in {'','.'}:
-            gene2NearestDownstreamDistance=int(lineChunks[35])
+            gene2NearestDownstreamDistance=int(lineChunks[37])
             if gene2NearestDownstreamDistance>MAXDISTANCE:
                 gene2NearestDownstreamRaw=""
         else:
             gene2NearestDownstreamRaw=""
-        gene2NearestDownstreamCancer=lineChunks[36]
+        gene2NearestDownstreamCancer=','.join([x.split(';')[0] for x in lineChunks[38].split(',')])
         if gene2NearestDownstreamCancer not in {'','.'}:
-            gene2NearestDownstreamCancerDistance=int(lineChunks[37])
+            gene2NearestDownstreamCancerDistance=int(lineChunks[39])
             if gene2NearestDownstreamCancerDistance>MAXDISTANCE:
                 gene2NearestDownstreamCancer=""
         else:
