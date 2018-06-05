@@ -36,7 +36,7 @@
         <!-- Software modules - if enabled these will over ride the binary definitions -->
         <cvalue name="workflowEnvironmentScript" value="workflowEnvironment_tbiLsf" type="string"/>
         <cvalue name='LOAD_MODULE' value='true' type='boolean' description="Only relevant for workflowEnvironmentScript=workflowEnvironment_tbiPbs"/>
-        <cvalue name='MODULE_ENV' value='HIPO2_sv/v1' type='string' description="Only relevant for some Sophia versions (<35.0)."/>
+        <cvalue name='MODULE_ENV' value='HIPO2_sv/v1' type='string' description="Only relevant for some Sophia versions (&lt; 35.0)."/>
 
         <!-- These variables are needed for the annotations files below.
              Additionally, on the TBI clusters they are used to compose the path to the Sophia binary. -->
@@ -105,24 +105,6 @@
         <cvalue name="controlProperPairRatio" value="" description="Ratio of properly paired alignment pairs."/>
         <cvalue name='tumorDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
         <cvalue name='controlDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
-
-        <!-- Settings for metadata table -->
-        <cvalue name="datasetCol" value="PID" tags="mandatory"
-                description="Datasets (e.g. patient ID). Default: PID"/>
-        <cvalue name="fileCol" value="BAM" tags="mandatory"
-                description="BAM file to use as input. Default if undefined: Error!"/>
-        <cvalue name="sampleCol" value="Sample" tags="mandatory"
-                description="Sample name. Default: Sample. Default if undefined: Error!"/>
-        <cvalue name="sampleClassCol" value="SampleClass" tags="mandatory"
-                description="Sample class, reference/control or probe/tumor. Default if undefined: Error!"/>
-        <cvalue name="defaultReadLengthCol" value="DefaultReadLength"
-                description="Default: ReadLayout. Default if undefined: paired."/>
-        <cvalue name="medianIsizeCol" value="MedianIsize"
-                description="Default: Run"/>
-        <cvalue name="stdIsizePercentageCol" value="StdIsizePercentage"
-                description="Default if undefined: "/>
-        <cvalue name="properPairRatioCol" value="ProperPairRatio"
-                description="Default if undefined: "/>
 
     </configurationvalues>
     <processingTools>

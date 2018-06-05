@@ -18,7 +18,7 @@ class SophiaWorkflow extends WorkflowUsingMergedBams {
 
     public static final String TOOL_SOPHIA = "sophia"
     public static final String ANALYSIS_TAG = "analysisTag"
-    public static final String ISIZES_LIST = "insertsizesfile_list"
+    public static final String ISIZES_FILE_LIST = "insertsizesfile_list"
     public static final String BAMFILE_LIST = "bamfile_list"
 
     /**
@@ -57,17 +57,17 @@ class SophiaWorkflow extends WorkflowUsingMergedBams {
             context.configuration.configurationValues << new ConfigurationValue("controlSample", (bamControlMerged.fileStage as COFileStageSettings).sample.name)
 
             BaseFile sophiaControlFile =
-                    call(TOOL_SOPHIA, bamControlMerged, getBamParameters(context.configuration, "control")) as BaseFile
+                    run(TOOL_SOPHIA, bamControlMerged, getBamParameters(context.configuration, "control")) as BaseFile
             BaseFile sophiaTumorFile =
-                    call(TOOL_SOPHIA, bamTumorMerged, getBamParameters(context.configuration, "tumor")) as BaseFile
+                    run(TOOL_SOPHIA, bamTumorMerged, getBamParameters(context.configuration, "tumor")) as BaseFile
 
-            call("sophiaAnnotator", sophiaControlFile, sophiaTumorFile)
+            run("sophiaAnnotator", sophiaControlFile, sophiaTumorFile)
         } else { //NoControl!
             context.getConfiguration().getConfigurationValues().add(new ConfigurationValue(ANALYSIS_TAG, "tumorOnly"))
             BaseFile sophiaTumorFile =
-                    call(TOOL_SOPHIA, bamTumorMerged, getBamParameters(context.configuration, "tumor")) as BaseFile
+                    run(TOOL_SOPHIA, bamTumorMerged, getBamParameters(context.configuration, "tumor")) as BaseFile
 
-            call("sophiaAnnotatorNoControl", sophiaTumorFile)
+            run("sophiaAnnotatorNoControl", sophiaTumorFile)
         }
     }
 
@@ -80,10 +80,10 @@ class SophiaWorkflow extends WorkflowUsingMergedBams {
         loadInitialBamFilesForDataset(context)
 
         def configurationValues = context.getConfigurationValues()
-        boolean isizesListIsSet = configurationValues.hasValue(ISIZES_LIST)
+        boolean isizesListIsSet = configurationValues.hasValue(ISIZES_FILE_LIST)
         boolean bamListIsSet = configurationValues.hasValue(BAMFILE_LIST)
         if(isizesListIsSet && ! bamListIsSet) {
-            context.addErrorEntry(ExecutionContextError.EXECUTION_NOINPUTDATA.expand("Setting ${ISIZES_LIST} is only allowed if ${BAMFILE_LIST} is set as well."))
+            context.addErrorEntry(ExecutionContextError.EXECUTION_NOINPUTDATA.expand("Setting ${ISIZES_FILE_LIST} is only allowed if ${BAMFILE_LIST} is set as well."))
             return false
         }
 
