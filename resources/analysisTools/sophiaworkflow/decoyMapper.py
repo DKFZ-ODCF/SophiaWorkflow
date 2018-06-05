@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from sys import argv
 from bisect import bisect_left
 decoyRangeRef=argv[1]

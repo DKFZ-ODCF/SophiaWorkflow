@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from sys import argv
 inputBedpe=argv[1]
 with open(inputBedpe) as f:
