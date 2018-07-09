@@ -8,6 +8,16 @@
 
     <configurationvalues>
 
+        <!-- Sample-specific parameter values -->
+        <cvalue name="tumorMedianIsize" value="" description="Median insert size."/>
+        <cvalue name="controlMedianIsize" value="" description="Median insert size."/>
+        <cvalue name="tumorStdIsizePercentage" value="" description=""/>
+        <cvalue name="controlStdIsizePercentage" value="" description=""/>
+        <cvalue name="tumorProperPairRatio" value="" description="Ratio of properly paired alignment pairs."/>
+        <cvalue name="controlProperPairRatio" value="" description="Ratio of properly paired alignment pairs."/>
+        <cvalue name='tumorDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
+        <cvalue name='controlDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
+
         <!-- ## Imported from cofilenames -->
         <cvalue name='sampleDirectory' value='${inputBaseDirectory}/${pid}/${sample}/${library}/${SEQUENCER_PROTOCOL}' type='path'/>
         <cvalue name='sequenceDirectory' value='${sampleDirectory}/${run}/sequence' type='path'/>
@@ -16,7 +26,7 @@
         <cvalue name='defaultMergedBamSuffix' value='${mergedBamSuffix_markDuplicatesShort}' type="string" description="The default suffix for merged bam files when they are created by Roddy."/>
         <cvalue name="extractSamplesFromOutputFiles" value="false" type="boolean"/>
 
-        <!-- ## Imported from cobase project -->thresh
+        <!-- ## Imported from cobase project -->
         <cvalue name='possibleControlSampleNamePrefixes' value='( blood BLOOD normal control CONTROL buffy_coat GERMLINE )' type='bashArray'/>
         <cvalue name='possibleTumorSampleNamePrefixes' value='( tumor TUMOR metastasis xenograft disease DISEASE relapse RELAPSE autopsy AUTOPSY metastasis METASTASIS )' type='bashArray'/>
         <cvalue name='possibleSingleCellSampleNamePrefixes' value='( SingleCell single_cell )' type='bashArray'/>
@@ -94,16 +104,6 @@
         <cvalue name='bpFreq' value='3' type='integer' />
         <cvalue name='germlineFuzziness' value='3' type='integer' />
         <cvalue name='germlineDbLimit' value='10' type='integer' />
-
-        <!-- Sample-specific parameter values -->
-        <cvalue name="tumorMedianIsize" value="" description="Median insert size."/>
-        <cvalue name="controlMedianIsize" value="" description="Median insert size."/>
-        <cvalue name="tumorStdIsizePercentage" value="" description=""/>
-        <cvalue name="controlStdIsizePercentage" value="" description=""/>
-        <cvalue name="tumorProperPairRatio" value="" description="Ratio of properly paired alignment pairs."/>
-        <cvalue name="controlProperPairRatio" value="" description="Ratio of properly paired alignment pairs."/>
-        <cvalue name='tumorDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
-        <cvalue name='controlDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
 
     </configurationvalues>
 

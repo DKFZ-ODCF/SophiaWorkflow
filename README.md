@@ -56,6 +56,8 @@ metadata provisioning via metadata table which is more convenient for calling an
 
 * Version 2.0.0
 
-  * Sophia update to 35
+  * Sophia version 35.
   
 * Version 1.2.
+
+  * Sophia version 34.
