@@ -7,7 +7,6 @@ Sophia is a tool for identifying structural variations. It was developed by Umut
 | Switch                     | Default Description |
 |----------------------------|---------------------|
 | bamfile_list               | A semicolon separated list of bamfiles (1. control, 2. tumor, ...) |
-| insertsizesfile_list  | Files with insert sizes in order matching the bamfile_list |
 | possibleControlSampleNamePrefixes | Space-separated list of prefix identifying control samples |
 | possibleTumorSampleNamePrefixes | Space-separated list of prefix identifying tumor samples |
 | sample_list | Semicolon-separated list of sample names |
@@ -41,7 +40,7 @@ roddy.sh run $configName@$analysisName $pid \
 
 ```
 
-It is still possible to provide the insert sizes via the `insertsizesfile_list` variable, as is possible for the earlier versions.
+It is not possible anymore to provide the insert sizes via the `insertsizesfile_list` variable, like it was for the earlier versions.
 
 If you want to retrieve the BAM files and their metadata from the filesystem, you can also use the following variables:
 
@@ -50,7 +49,8 @@ If you want to retrieve the BAM files and their metadata from the filesystem, yo
   * `possibleTumorSampleNamePrefixes`
   * `sample_list`
 
-However, this mode is less safe and clear than the previous more explicit way of calling the workflow.
+However, this mode is less safe and clear than the previous more explicit way of calling the workflow. On the longer run, we will implemented the
+metadata provisioning via metadata table which is more convenient for calling and less error prone.
 
 ## Changelist
 

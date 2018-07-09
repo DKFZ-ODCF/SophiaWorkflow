@@ -5,6 +5,7 @@
                listOfUsedTools=""
                usedToolFolders="sophiaworkflow,tools"
                cleanupScript="cleanupScript">
+
     <configurationvalues>
 
         <!-- ## Imported from cofilenames -->
@@ -13,8 +14,9 @@
         <cvalue name='mergedBamSuffix_markDuplicatesShort' value='merged.mdup.bam' type="string"/>
         <cvalue name='mergedBamSuffixList' value='${mergedBamSuffix_markDuplicatesShort}' type="string" description="A list of all known suffixes for merged bam files. I.e. merged.dupmark.bam, merged.mdup.bam..."/>
         <cvalue name='defaultMergedBamSuffix' value='${mergedBamSuffix_markDuplicatesShort}' type="string" description="The default suffix for merged bam files when they are created by Roddy."/>
+        <cvalue name="extractSamplesFromOutputFiles" value="false" type="boolean"/>
 
-        <!-- ## Imported from cobase project -->
+        <!-- ## Imported from cobase project -->thresh
         <cvalue name='possibleControlSampleNamePrefixes' value='( blood BLOOD normal control CONTROL buffy_coat GERMLINE )' type='bashArray'/>
         <cvalue name='possibleTumorSampleNamePrefixes' value='( tumor TUMOR metastasis xenograft disease DISEASE relapse RELAPSE autopsy AUTOPSY metastasis METASTASIS )' type='bashArray'/>
         <cvalue name='possibleSingleCellSampleNamePrefixes' value='( SingleCell single_cell )' type='bashArray'/>
@@ -30,8 +32,8 @@
         <cvalue name='insertSizesOutputDirectory' value='insertsize_distribution'/>
         <cvalue name='qcOutputDirectory' value='qualitycontrol' type='string'/>
         <cvalue name='sophiaOutputDirectory' value='SOPHIA_${tumorSample}_${controlSample}' type='string'/>
-        <cvalue name='ALIGNMENT_DIR' value='${outputAnalysisBaseDirectory}/${alignmentOutputDirectory}' type='string'/>
-        <cvalue name='SOPHIA_DIR' value='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}' type='string'/>
+        <cvalue name='ALIGNMENT_DIR' value='${outputAnalysisBaseDirectory}/${alignmentOutputDirectory}' type='path'/>
+        <cvalue name='SOPHIA_DIR' value='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}' type='path'/>
 
         <!-- Software modules - if enabled these will over ride the binary definitions -->
         <cvalue name="workflowEnvironmentScript" value="workflowEnvironment_tbiLsf" type="string"/>
@@ -41,13 +43,10 @@
         <!-- These variables are needed for the annotations files below.
              Additionally, on the TBI clusters they are used to compose the path to the Sophia binary. -->
         <cvalue name="SAMTOOLS_VERSION" value="1.6" type="string"/>
-        <cvalue name="SOPHIA_VERSION" value="35.0" type="string"/>
+        <cvalue name="SOPHIA_VERSION" value="35" type="string"/>
         <cvalue name="BEDTOOLS_VERSION" value="2.24.0" type="string"/>
-        <cvalue name="PYTHON_VERSION" value="3.6.0" type="string"/>
+        <cvalue name="PYTHON_VERSION" value="3.6.1" type="string"/>
         <cvalue name="R_VERSION" value="3.4.2" type="string"/>
-        <cvalue name='PIPELINE_BASE' value='/tbi/cluster/13.1/x86_64/sophia/sophia-${SOPHIA_VERSION}' type='string' />
-        <cvalue name="ANNOTATION_PIPELINE_BASE" value="${PIPELINE_BASE}/sophiaAnnotate"
-                description="Set this to the sophiaAnnotate directory in the Sophia installation that you use."/>
 
         <!-- ## Default file acces -->
         <cvalue name='outputFileGroup' value='B080'/>
@@ -62,21 +61,21 @@
         <cvalue name="STANDARDHEADER" value='"#chrom1\tstart1\tend1\tchrom2\tstart2\tend2\tsomaticity1\tsomaticity2\tsvtype\teventScore\teventSize\teventInversion\tevidence1\tclonalityRatio1\tevidence2\tclonalityRatio2\tsource1\tsource2\toverhang1\toverhang2\tgene1\tcancerGene1\tnearestCodingGeneUpstream1\tnearestCodingGeneUpstreamDistance1\tnearestCancerGeneUpstream1\tnearestCancerGeneUpstreamDistance1\tnearestCodingGeneDownstream1\tnearestCodingGeneDownstreamDistance1\tnearestCancerGeneDownstream1\tnearestCancerGeneDownstreamDistance1\tgene2\tcancerGene2\tnearestCodingGeneUpstream2\tnearestCodingGeneUpstreamDistance2\tnearestCancerGeneUpstream2\tnearestCancerGeneUpstreamDistance2\tnearestCodingGeneDownstream2\tnearestCodingGeneDownstreamDistance2\tnearestCancerGeneDownstream2\tnearestCancerGeneDownstreamDistance2\tdbSUPERenhancer1\tdbSUPERenhancer2\trescuedEnhancerHitCandidate\tTADindices\taffectedGenesTADestimate\taffectedCancerGenesTADestimate\tchrom1PreDecoyRemap\tstart1PreDecoyRemap\tend1PreDecoyRemap\tchrom2PreDecoyRemap\tstart2PreDecoyRemap\tend2PreDecoyRemap"' description=""/>
 
         <!-- DATABASES AND REFERENCE FILES -->
-        <cvalue name='REFERENCES_BASE' value='${ANNOTATION_PIPELINE_BASE}/annotationMaterials/' type='string' />
-        <cvalue name='mergedRef' value='${PIPELINE_BASE}/hg19_WholeGenome_merged_NOMT.bed' type='string' />
-        <cvalue name='geneRefBedCancer' value='${REFERENCES_BASE}/gencode.v19.annotation_plain.genes_collapsed_sorted_CANCER.bed.gz' type='string' />
-        <cvalue name='exonsOnlyPaddedRefBed' value='${REFERENCES_BASE}/gencode.v19.annotation_plain.exonsOnly.sorted_uniq_collapsed_sorted.padded_3.bed.gz' type='string' />
-        <cvalue name='spliceJunctionsRefBed' value='${REFERENCES_BASE}/mergedIntrons.bed.gz' type='string' />
-        <cvalue name='combinedSuperEnhancerRefBed' value='${REFERENCES_BASE}/dbSUPERenhancers_hg19_060417.bed.gz' type='string' />
-        <cvalue name='roadmapEnhancerRefBed' value='${REFERENCES_BASE}/ROADMAP_EnhA_EnhBiv_EnhG.min5_Sorted.bed.gz' type='string' />
-        <cvalue name='consensusTadReferenceBed' value='${REFERENCES_BASE}/consensusTADs_3_sorted_annotated.bed' type='string' />
-        <cvalue name='geneRefBed' value='${REFERENCES_BASE}/gencode.v19.annotation_plain.genes_collapsed_sorted.bed.gz' type='string' />
-        <cvalue name='geneRefBedCoding' value='${REFERENCES_BASE}/gencode.v19.annotation_plain.genes_collapsed_sorted_filtered_coding.bed.gz' type='string' />
-        <cvalue name='intronExonRefBed' value='${REFERENCES_BASE}/gencode.v19.annotation_plain.exons_introns.sorted_uniq_collapsed_sorted_filtered.bed.gz' type='string' />
-        <cvalue name='repeatsRefBed' value='${REFERENCES_BASE}/repeatmasker_hg19_nostrand_nolength_sorted.bed.gz' type='string' />
-        <cvalue name='chromSizesRef' value='${REFERENCES_BASE}/hg19_chromSizes_withContigsDecoys.genome' type='string' />
-        <cvalue name='pidsInMref' value='3261' type='string' />
-        <cvalue name='mRef' value='${REFERENCES_BASE}/mergedMref_v${SOPHIA_VERSION}_${pidsInMref}_mergedBpCounts.bed.gz' type='string' />
+        <cvalue name='REFERENCES_BASE' value='/icgc/dkfzlsdf/analysis/B080/kensche/RoddyProject_Roddy3.0/referenceFiles/sophia/35.0' type='path' />
+
+        <cvalue name="decoyRangeRefBed" value="${REFERENCES_BASE}/decoyRangeRefNew.bed" type="path"/>
+        <cvalue name='consensusTadReferenceBed' value='${REFERENCES_BASE}/consensusTADs_3_new_allChromosomes_cytobands_gencodeV27genes.names.bed' type='path'/>
+        <cvalue name='geneRefBed' value='${REFERENCES_BASE}/gencode.v27.basic.Genes.names.bed.gz' type='path'/>
+        <cvalue name='geneRefBedCancer' value='${REFERENCES_BASE}/gencode.v27.basic.Genes.cancer.names.bed.gz' type='path'/>
+        <cvalue name='spliceJunctionsRefBed' value='${REFERENCES_BASE}/mergedIntrons.bed.gz' type='path'/>
+        <cvalue name='exonsOnlyPaddedRefBed' value='${REFERENCES_BASE}/gencode.v27.basic.ExonsPad3.bed.gz' type='path'/>
+        <cvalue name='intronExonRefBed' value='${REFERENCES_BASE}/gencode.v27.basic.IntronsExons.names.bed.gz' type='path'/>
+        <cvalue name="intronExonRefBedCancer" value="${REFERENCES_BASE}/gencode.v27.basic.IntronsExons.cancer.names.bed.gz" type='path'/>
+        <cvalue name='roadmapEnhancerRefBed' value='${REFERENCES_BASE}/ROADMAP_EnhA_EnhBiv_EnhG.min5_Sorted.bed.gz' type='path'/>
+        <cvalue name='combinedSuperEnhancerRefBed' value='${REFERENCES_BASE}/dbSUPERenhancers_hg19_060417.bed.gz' type='path'/>
+        <cvalue name='chromSizesRef' value='${REFERENCES_BASE}/hg19_chromSizes_withContigsDecoys.genome' type='path'/>
+        <cvalue name='pidsInMref' value='3417' type='string'/>
+        <cvalue name='mRef' value='${REFERENCES_BASE}/mergedMref_strictBreaks_v${SOPHIA_VERSION}_${pidsInMref}_mergedBpCounts_min3.bed.gz' type='path'/>
 
         <!-- PARAMTER VALUES -->
         <cvalue name='mapqThreshold' value='13' type='integer' />
@@ -92,7 +91,7 @@
         <cvalue name='clonalityLoFreq' value='5' type='integer' />
         <cvalue name='clonalityStrictLoFreq' value='20' type='integer' />
         <cvalue name='clonalityHiFreq' value='85' type='integer' />
-        <cvalue name='bpFreq' value='5' type='integer' />
+        <cvalue name='bpFreq' value='3' type='integer' />
         <cvalue name='germlineFuzziness' value='3' type='integer' />
         <cvalue name='germlineDbLimit' value='10' type='integer' />
 
@@ -107,8 +106,8 @@
         <cvalue name='controlDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
 
     </configurationvalues>
+
     <processingTools>
-        <tool name="workflowEnvironment_tbiPbs" value="tbi-pbs.sh" basepath="sophiaworkflow/environments"/>
         <tool name="workflowEnvironment_tbiLsf" value="tbi-lsf.sh" basepath="sophiaworkflow/environments"/>
 
         <!-- START NEW -->

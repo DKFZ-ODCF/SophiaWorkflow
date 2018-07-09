@@ -12,7 +12,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="DefaultPlugin" />
+    <orderEntry type="module" module-name="DefaultPlugin_1.2.2" />
     <orderEntry type="module" module-name="PluginBase" />
     <orderEntry type="module" module-name="COWorkflowsBasePlugin" />
     <orderEntry type="library" name="R User Library" level="project" />

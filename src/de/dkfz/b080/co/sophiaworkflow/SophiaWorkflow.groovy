@@ -18,7 +18,6 @@ class SophiaWorkflow extends WorkflowUsingMergedBams {
 
     public static final String TOOL_SOPHIA = "sophia"
     public static final String ANALYSIS_TAG = "analysisTag"
-    public static final String ISIZES_FILE_LIST = "insertsizesfile_list"
     public static final String BAMFILE_LIST = "bamfile_list"
 
     /**
@@ -80,10 +79,9 @@ class SophiaWorkflow extends WorkflowUsingMergedBams {
         loadInitialBamFilesForDataset(context)
 
         def configurationValues = context.getConfigurationValues()
-        boolean isizesListIsSet = configurationValues.hasValue(ISIZES_FILE_LIST)
         boolean bamListIsSet = configurationValues.hasValue(BAMFILE_LIST)
-        if(isizesListIsSet && ! bamListIsSet) {
-            context.addErrorEntry(ExecutionContextError.EXECUTION_NOINPUTDATA.expand("Setting ${ISIZES_FILE_LIST} is only allowed if ${BAMFILE_LIST} is set as well."))
+        if(! bamListIsSet) {
+            context.addErrorEntry(ExecutionContextError.EXECUTION_NOINPUTDATA.expand("${BAMFILE_LIST} is not set."))
             return false
         }
 
