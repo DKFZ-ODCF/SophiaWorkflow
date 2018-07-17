@@ -7,9 +7,9 @@ Sophia is a tool for identifying structural variations. It was developed by Umut
 | Switch                     | Default Description |
 |----------------------------|---------------------|
 | bamfile_list               | A semicolon separated list of bamfiles (1. control, 2. tumor, ...) |
-| possibleControlSampleNamePrefixes | Space-separated list of prefix identifying control samples |
-| possibleTumorSampleNamePrefixes | Space-separated list of prefix identifying tumor samples |
 | sample_list | Semicolon-separated list of sample names |
+| possibleControlSampleNamePrefixes | Space-separated list of prefix identifying control samples. Used for matching sample names in files when retrieving BAM metadata from pathnames. Always required. |
+| possibleTumorSampleNamePrefixes | Space-separated list of prefix identifying tumor samples. Used for matching sample names in files when retrieving BAM metadata from pathnames. Always required. |
 | controlDefaultReadLength   | Default read length |
 | tumorDefaultReadLength     | Default read length |
 | controlMedianIsize         | Median of control insert size distribution |
@@ -29,6 +29,9 @@ roddy.sh run $configName@$analysisName $pid \
   --useconfig=/path/to/your/applicationProperties.ini \
   --configurationValues="\
       bamfile_list:$controlBam;$tumorBam,\
+      sample_list:$controlName;$tumorName,
+      possibleControlSampleNamePrefixes:$controlName,\
+      possibleTumorSampleNamePrefixes:$tumorName,\
       controlDefaultReadLength:${controlDefaultReadLength},\
       tumorDefaultReadLength:${tumorDefaultReadLength},\
       controlMedianIsize:${controlMedianIsize},\
@@ -49,8 +52,7 @@ If you want to retrieve the BAM files and their metadata from the filesystem, yo
   * `possibleTumorSampleNamePrefixes`
   * `sample_list`
 
-However, this mode is less safe and clear than the previous more explicit way of calling the workflow. On the longer run, we will implemented the
-metadata provisioning via metadata table which is more convenient for calling and less error prone.
+However, this mode is less safe and clear than the previous more explicit way of calling the workflow. On the longer run, we will implemented the metadata provisioning via metadata table, which is more convenient for calling and less error prone.
 
 ## Changelist
 

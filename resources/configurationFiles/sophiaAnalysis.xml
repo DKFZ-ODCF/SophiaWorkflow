@@ -168,13 +168,12 @@
                 <output type="file" typeof="AnnotationFilteredSomaticBedpeFileTmVsCntrlPdf" scriptparameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC_PDF"/>
                 <output type="file" typeof="AnnotationFilteredSomaticBedpeFileTmVsCntrlACEseq" scriptparameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC_ACESEQ"/>
                 <output type="file" typeof="AnnotationFilteredQJsonTmVsCntrl" scriptparameter="QC_JSON_FILE"/>
-                <output type="file" typeof="AnnotationFilteredSomaticBedpeFileTmVsCntrlACEseqOverhangCandidates"
+                <output type="file" typeof="AnnotationFilteredSomaticBedpeFileTmVsCntrlACEseqOverhangCandidates" check="false"
                         scriptparameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES"/>
             </output>
         </tool>
     </processingTools>
     <filenames package='de.dkfz.b080.co.files' filestagesbase='de.dkfz.b080.co.files.COFileStage'>
-  <!--  <filename class='InsertSizesValueFile' derivedFrom='BasicBamFile' pattern='${outputAnalysisBaseDirectory}/${insertSizesOutputDirectory}/${sourcefileAtomicPrefix,delimiter="_"}_insertsize_plot.png_qcValues.txt'/> -->
         <filename class='InsertSizesValueFile' derivedFrom='BasicBamFile'
                   pattern='${outputAnalysisBaseDirectory}/qualitycontrol/${sample}/merged/${insertSizesOutputDirectory}/${sourcefileAtomicPrefix,delimiter="_"}_insertsize_plot.png_qcValues.txt'/>
 

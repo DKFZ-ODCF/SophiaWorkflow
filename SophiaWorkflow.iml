@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="Python" name="Python">
+      <configuration sdkName="" />
+    </facet>
+  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
@@ -12,7 +17,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="DefaultPlugin_1.2.2" />
     <orderEntry type="module" module-name="PluginBase" />
     <orderEntry type="module" module-name="COWorkflowsBasePlugin" />
     <orderEntry type="library" name="R User Library" level="project" />
@@ -21,5 +25,6 @@
     <orderEntry type="library" name="Gradle: org.codehaus.groovy:groovy-all:2.4.9" level="project" />
     <orderEntry type="module" module-name="Roddy" />
     <orderEntry type="module" module-name="RoddyToolLib" />
+    <orderEntry type="module" module-name="DefaultPlugin" />
   </component>
 </module>
