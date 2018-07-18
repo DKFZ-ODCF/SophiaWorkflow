@@ -45,14 +45,7 @@ roddy.sh run $configName@$analysisName $pid \
 
 It is not possible anymore to provide the insert sizes via the `insertsizesfile_list` variable, like it was for the earlier versions.
 
-If you want to retrieve the BAM files and their metadata from the filesystem, you can also use the following variables:
-
-  * `extractSamplesFromOutputFiles` needs to be set to "true"
-  * `possibleControlSampleNamePrefixes`
-  * `possibleTumorSampleNamePrefixes`
-  * `sample_list`
-
-However, this mode is less safe and clear than the previous more explicit way of calling the workflow. On the longer run, we will implemented the metadata provisioning via metadata table, which is more convenient for calling and less error prone.
+If you want to retrieve the BAM files and their metadata from the filesystem, you can also set `extractSamplesFromOutputFiles` to "true". Note however that this mode is less safe and clear than the more explicit way of calling the workflow. On the longer run, we will implemented the metadata provisioning via metadata table, which is more convenient for calling and less error prone.
 
 ## Changelist
 
