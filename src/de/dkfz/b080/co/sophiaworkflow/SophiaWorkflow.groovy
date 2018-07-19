@@ -38,7 +38,7 @@ class SophiaWorkflow extends WorkflowUsingMergedBams {
         ["defaultReadLength",
          "medianIsize",
          "stdIsizePercentage",
-         "properPairRatio"
+         "properPairPercentage"
         ].collectEntries(result) { varname ->
             new MapEntry(varname, config.configurationValues.get("${sampleName}${varname.capitalize()}").toString())
         }

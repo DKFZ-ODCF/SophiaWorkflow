@@ -10,14 +10,14 @@ Sophia is a tool for identifying structural variations. It was developed by Umut
 | sample_list | Semicolon-separated list of sample names |
 | possibleControlSampleNamePrefixes | Space-separated list of prefix identifying control samples. Used for matching sample names in files when retrieving BAM metadata from pathnames. Always required. |
 | possibleTumorSampleNamePrefixes | Space-separated list of prefix identifying tumor samples. Used for matching sample names in files when retrieving BAM metadata from pathnames. Always required. |
-| controlDefaultReadLength   | Default read length |
-| tumorDefaultReadLength     | Default read length |
-| controlMedianIsize         | Median of control insert size distribution |
-| tumorMedianIsize           | Median of tumor insert size distribution |
-| controlStdIsizePercentage  | Quotient of median and standard deviation of the control insert size distribution |   
-| tumorStdIsizePercentage    | Quotient of median and standard deviation of the tumor insert size distribution |
-| controlProperPairRatio     | Proportion of properly paired read pairs in control |
-| tumorProperPairRatio       | Proportion of properly paired read pairs in tumor |
+| controlDefaultReadLength    | Default read length |
+| tumorDefaultReadLength      | Default read length |
+| controlMedianIsize          | Median of control insert size distribution |
+| tumorMedianIsize            | Median of tumor insert size distribution |
+| controlStdIsizePercentage   | Quotient of median and standard deviation of the control insert size distribution |   
+| tumorStdIsizePercentage     | Quotient of median and standard deviation of the tumor insert size distribution |
+| controlProperPairPercentage | Percentage of properly paired read pairs in control |
+| tumorProperPairPercentage   | Percentage of properly paired read pairs in tumor |
 --------------------------------
 
 ## Starting the Workflow
@@ -38,8 +38,8 @@ roddy.sh run $configName@$analysisName $pid \
       tumorMedianIsize:${tumorMedianIsize},\
       controlStdIsizePercentage:${controlStdIsizePercentage},\
       tumorStdIsizePercentage:${tumorStdIsizePercentage},\
-      controlProperPairRatio:${controlProperPairRatio},\
-      tumorProperPairRatio:${tumorProperPairRatio}"
+      controlProperPairPercentage:${controlProperPairPercentage},\
+      tumorProperPairPercentage:${tumorProperPairPercentage}"
 
 ```
 

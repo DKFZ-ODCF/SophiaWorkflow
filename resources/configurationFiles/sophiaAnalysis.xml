@@ -13,8 +13,8 @@
         <cvalue name="controlMedianIsize" value="" description="Median insert size."/>
         <cvalue name="tumorStdIsizePercentage" value="" description=""/>
         <cvalue name="controlStdIsizePercentage" value="" description=""/>
-        <cvalue name="tumorProperPairRatio" value="" description="Ratio of properly paired alignment pairs."/>
-        <cvalue name="controlProperPairRatio" value="" description="Ratio of properly paired alignment pairs."/>
+        <cvalue name="tumorProperPairPercentage" value="" description="Percentage of properly paired alignment pairs."/>
+        <cvalue name="controlProperPairPercentage" value="" description="Percentage of properly paired alignment pairs."/>
         <cvalue name='tumorDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
         <cvalue name='controlDefaultReadLength' value='151' type='integer' description="#151 for x10, 101 for older hiseq data" />
 
@@ -174,9 +174,6 @@
         </tool>
     </processingTools>
     <filenames package='de.dkfz.b080.co.files' filestagesbase='de.dkfz.b080.co.files.COFileStage'>
-        <filename class='InsertSizesValueFile' derivedFrom='BasicBamFile'
-                  pattern='${outputAnalysisBaseDirectory}/qualitycontrol/${sample}/merged/${insertSizesOutputDirectory}/${sourcefileAtomicPrefix,delimiter="_"}_insertsize_plot.png_qcValues.txt'/>
-
         <filename class='SophiaOutputBedpe' derivedFrom="BasicBamFile"
                   pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/${sample}_${pid}_bps.tsv.gz'/>
 

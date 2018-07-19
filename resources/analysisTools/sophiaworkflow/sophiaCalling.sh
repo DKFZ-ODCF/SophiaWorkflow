@@ -9,7 +9,7 @@ ${SAMTOOLS_BINARY} view -F 0x600 -f 0x001 ${BAMFILE} \
     | ${SOPHIA_BINARY} \
         --medianisize ${medianIsize} \
         --stdisizepercentage ${stdIsizePercentage} \
-        --properpairratio ${properPairRatio} \
+        --properpairpercentage ${properPairPercentage} \
         --defaultreadlength ${defaultReadLength} \
         --clipsize ${clipThreshold} \
         --basequality ${qualThreshold} \
