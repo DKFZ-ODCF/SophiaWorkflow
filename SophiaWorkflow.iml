@@ -26,5 +26,6 @@
     <orderEntry type="module" module-name="Roddy" />
     <orderEntry type="module" module-name="RoddyToolLib" />
     <orderEntry type="module" module-name="DefaultPlugin" />
+    <orderEntry type="module" module-name="COWorkflowsBasePlugin_1.1.0" />
   </component>
 </module>
