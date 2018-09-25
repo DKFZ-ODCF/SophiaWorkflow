@@ -1,6 +1,6 @@
 # Description
 
-Sophia is a tool for identifying structural variations. It was developed by Umut Toprak at the Computational Oncology group, Theoretical Bioinformatics, German Cancer Research Center (DKFZ).
+[Sophia](https://bitbucket.org/utoprak/sophia) is a tool for identifying structural variations. It was developed by Umut Toprak at the Computational Oncology group, Theoretical Bioinformatics, German Cancer Research Center (DKFZ).
 
 ## Run flags / switches / passable values
 
