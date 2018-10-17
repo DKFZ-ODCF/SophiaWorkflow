@@ -126,30 +126,36 @@ then
 	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED_GERMLINE} "'${project}:${pid}(germline)'" "$circlizeScoreThreshold"
 	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED} "'${project}:${pid}(g&s)'" "$circlizeScoreThreshold"
 	set -e
-	mv "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_ACESEQ" "${BEDPE_RESULT_FILE_FILTERED_SOMATIC_ACESEQ/.tmp/}"
 
-    # Note: The PDF files don't have their own TMP name. The TMP name of the input file is reused and inserted right in the middle of the filename.
+	mv "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_ACESEQ" "${BEDPE_RESULT_FILE_FILTERED_SOMATIC_ACESEQ/.tmp/}"
     mv "$BEDPE_RESULT_FILE_FILTERED_SOMATIC" "${BEDPE_RESULT_FILE_FILTERED_SOMATIC/.tmp/}"
     mv "$BEDPE_RESULT_FILE_FILTERED_DEDUP_SOMATIC" "${BEDPE_RESULT_FILE_FILTERED_DEDUP_SOMATIC/.tmp/}"
-    mv "${BEDPE_RESULT_FILE_FILTERED_SOMATIC}_score_${circlizeScoreThreshold}_scaled.pdf" "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_PDF"
-
     mv "$BEDPE_RESULT_FILE_FILTERED_GERMLINE" "${BEDPE_RESULT_FILE_FILTERED_GERMLINE/.tmp/}"
     mv "$BEDPE_RESULT_FILE_FILTERED_DEDUP_GERMLINE" "${BEDPE_RESULT_FILE_FILTERED_DEDUP_GERMLINE/.tmp/}"
-    mv "${BEDPE_RESULT_FILE_FILTERED_GERMLINE}_score_${circlizeScoreThreshold}_scaled.pdf" "${BEDPE_RESULT_FILE_FILTERED_GERMLINE_PDF}"
-
     mv "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES" "${BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES/.tmp/}"
+
+    pdfunite \
+	    "${BEDPE_RESULT_FILE_FILTERED_SOMATIC}_score_${circlizeScoreThreshold}_scaled.pdf" \
+	    "${BEDPE_RESULT_FILE_FILTERED_GERMLINE}_score_${circlizeScoreThreshold}_scaled.pdf" \
+	    "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf" \
+	    "${BEDPE_RESULT_FILE_FILTERED_PDF}"
+	rm "${BEDPE_RESULT_FILE_FILTERED_SOMATIC}_score_${circlizeScoreThreshold}_scaled.pdf"
+	rm "${BEDPE_RESULT_FILE_FILTERED_GERMLINE}_score_${circlizeScoreThreshold}_scaled.pdf"
+    rm "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf"
+
 else
 	awk '$10>2' ${BEDPE_RESULT_FILE_FILTERED} > ${BEDPE_RESULT_FILE_FILTERED_ACESEQ}
+
 	set +e
 	${RSCRIPT_BINARY} ${TOOL_CIRCLIZE_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED} "'${project}:${pid}(g&s)'" "$circlizeScoreThreshold"
 	set -e
+
 	mv "$BEDPE_RESULT_FILE_FILTERED_ACESEQ" "${BEDPE_RESULT_FILE_FILTERED_ACESEQ/.tmp/}"
+    mv "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf" "$BEDPE_RESULT_FILE_FILTERED_PDF"
 fi
 
-# Note: The PDF files don't have their own TMP name. The TMP name of the input file is reused and inserted right in the middle of the filename.
 mv "$BEDPE_RESULT_FILE_FILTERED" "${BEDPE_RESULT_FILE_FILTERED/.tmp/}"
 mv "$BEDPE_RESULT_FILE_FILTERED_DEDUP" "${BEDPE_RESULT_FILE_FILTERED_DEDUP/.tmp/}"
-mv "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf" "$BEDPE_RESULT_FILE_FILTERED_PDF"
 
 ############################################ CREATE THE QC JSON FILE
 QC_JSON_FILE="$QC_JSON_FILE.tmp"
