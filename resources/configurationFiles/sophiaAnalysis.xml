@@ -196,7 +196,7 @@
         <filename class='AnnotationFilteredDedupBedpeFileTmVsCntrl'           derivedFrom='SophiaOutputBedpe'
                   pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_${tumorSample}-${controlSample}_filtered_dedup.tsv'/>
         <filename class='AnnotationFilteredPdfFileTmVsCntrl'    derivedFrom='SophiaOutputBedpe'
-                  pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_${tumorSample}-${controlSample}_filtered_score_${circlizeScoreThreshold}_scaled_merged.pdf'/>
+                  pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_${tumorSample}-${controlSample}_filtered.tsv_score_${circlizeScoreThreshold}_scaled_merged.pdf'/>
 
 
         <filename class='AnnotationFilteredGermlineBedpeFileTmVsCntrl'   derivedFrom='SophiaOutputBedpe'
