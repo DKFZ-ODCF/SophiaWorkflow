@@ -1,6 +1,18 @@
 #!/bin/bash
 set -e
 
+fileNameIfExists() {
+    if [[ -f "$1" ]]; then
+        echo "$1"
+    fi
+}
+
+rmIfExists() {
+    if [[ -f "$1" ]]; then
+        rm "$1"
+    fi
+}
+
 tumorFileRaw=${tumorFile:0:${#tumorFile}-7}
 tumorFileRaw=${outputAnalysisBaseDirectory}/${tumorFileRaw##*/}
 
@@ -37,10 +49,6 @@ grep $'^#' ${ABRIDGED_ANNOTATION}Pre | grep -v $'^##' > ${ABRIDGED_ANNOTATION}.W
 grep $'^##' ${ABRIDGED_ANNOTATION}Pre  | sed 's/^##//'> "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES"
 set -e
 
-if [[ "`cat "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES" | wc -l`" == "0" ]]
-then
-	rm "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES"
-fi
 grep -v $'^#' ${ABRIDGED_ANNOTATION}Pre | awk '($4 != "NA")' | awk '$10 > 0' | sort -V -k 1,1 -k2,2 -k4,4 -k5,5 > ${ABRIDGED_ANNOTATION}_preRemap
 
 
@@ -135,13 +143,13 @@ then
     mv "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES" "${BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES/.tmp/}"
 
     pdfunite \
-	    "${BEDPE_RESULT_FILE_FILTERED_SOMATIC}_score_${circlizeScoreThreshold}_scaled.pdf" \
-	    "${BEDPE_RESULT_FILE_FILTERED_GERMLINE}_score_${circlizeScoreThreshold}_scaled.pdf" \
-	    "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf" \
+	    $(fileNameIfExists "${BEDPE_RESULT_FILE_FILTERED_SOMATIC}_score_${circlizeScoreThreshold}_scaled.pdf") \
+	    $(fileNameIfExists "${BEDPE_RESULT_FILE_FILTERED_GERMLINE}_score_${circlizeScoreThreshold}_scaled.pdf") \
+	    $(fileNameIfExists "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf") \
 	    "${BEDPE_RESULT_FILE_FILTERED_PDF}"
-	rm "${BEDPE_RESULT_FILE_FILTERED_SOMATIC}_score_${circlizeScoreThreshold}_scaled.pdf"
-	rm "${BEDPE_RESULT_FILE_FILTERED_GERMLINE}_score_${circlizeScoreThreshold}_scaled.pdf"
-    rm "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf"
+	rmIfExists "${BEDPE_RESULT_FILE_FILTERED_SOMATIC}_score_${circlizeScoreThreshold}_scaled.pdf"
+	rmIfExists "${BEDPE_RESULT_FILE_FILTERED_GERMLINE}_score_${circlizeScoreThreshold}_scaled.pdf"
+    rmIfExists "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf"
 
 else
 	awk '$10>2' ${BEDPE_RESULT_FILE_FILTERED} > ${BEDPE_RESULT_FILE_FILTERED_ACESEQ}
