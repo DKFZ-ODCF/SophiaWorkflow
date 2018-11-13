@@ -2,7 +2,7 @@
 <module type="JAVA_MODULE" version="4">
   <component name="FacetManager">
     <facet type="Python" name="Python">
-      <configuration sdkName="" />
+      <configuration sdkName="Python 3.6 (SophiaWorkflow)" />
     </facet>
   </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
@@ -26,5 +26,6 @@
     <orderEntry type="module" module-name="RoddyToolLib" />
     <orderEntry type="module" module-name="DefaultPlugin" />
     <orderEntry type="module" module-name="COWorkflowsBasePlugin_1.1.0" />
+    <orderEntry type="library" name="Python 3.6 (SophiaWorkflow) interpreter library" level="application" />
   </component>
 </module>

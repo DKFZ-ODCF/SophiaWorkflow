@@ -2,7 +2,19 @@
 
 [Sophia](https://bitbucket.org/utoprak/sophia) is a tool for identifying somatic structural variations in tumor-control sample pairs. It was developed by Umut Toprak at the Computational Oncology group, Theoretical Bioinformatics, German Cancer Research Center (DKFZ). This repository code allows to run Sophia with [Roddy](https://github.com/TheRoddyWMS/Roddy).
 
-## Run flags / switches / passable values
+## Installation
+
+### Software Stack
+
+TBD
+
+### Reference Data
+
+TBD
+
+## Configuration
+
+### Run flags / switches / passable values
 
 | Switch                     | Default Description |
 |----------------------------|---------------------|
@@ -45,9 +57,13 @@ roddy.sh run $configName@$analysisName $pid \
 
 It is not possible anymore to provide the insert sizes via the `insertsizesfile_list` variable, like it was for the version 1.
 
-If you want to retrieve the BAM files and their metadata from the filesystem, you can also set `extractSamplesFromOutputFiles` to "true". Note however that this mode is less safe and clear than the more explicit way of calling the workflow. On the longer run, we will implemented the metadata provisioning via metadata table, which is more convenient for calling and less error prone.
-
+If you want to retrieve the BAM files and their metadata from the filesystem, you can also set `extractSamplesFromOutputFiles` to "true". Note however that this mode is less safe and clear than the more explicit way of calling the workflow. 
 ## Changelist
+
+* Version 2.0.2
+
+  * Bugfix: PDF merging for samples without called germline variations.
+  * Bugfix: Undefined `newSize` in decoyMapper.py on some datasets. 
 
 * Version 2.0.1
 
@@ -57,6 +73,6 @@ If you want to retrieve the BAM files and their metadata from the filesystem, yo
 
   * Sophia version 35.
   
-* Version 1.2.
+* Version 1.2
 
   * Sophia version 34.

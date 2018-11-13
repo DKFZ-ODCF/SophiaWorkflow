@@ -58,17 +58,16 @@ with open(inputFile) as f:
                 if index > 0:
                     newChr,newPos,newPos2=decoyData[index-1]
                     if newChr!="hs37d5":
-                        if lineChunks[0]==newChr:
+                        if lineChunks[3]==newChr:
                             newSize=min(abs(int(lineChunks[1])-int(newPos)),abs(int(lineChunks[2])-int(newPos2)))
                             if newSize < 1e4:                               
                                 if "-" in source1 or "-" in source2 or "?" in source1 or "?" in source2:
                                     lineChunks[9]="1"
-                        #if sourceQualCheck(source2) and (int(newPos2)-int(newPos))<21000:
                         if sourceQualCheck(source2) and (int(newPos2)-int(newPos))<21000:
                             lineChunks[0]=newChr
                             lineChunks[1]=newPos
                             lineChunks[2]=newPos2
-                            if lineChunks[0]==newChr:
+                            if lineChunks[3]==newChr:
                                 lineChunks[10]=str(newSize)
                             else:
                                 lineChunks[8]="TRA"
@@ -83,7 +82,6 @@ with open(inputFile) as f:
                             if newSize < 1e4:
                                 if "-" in source1 or "-" in source2 or "?" in source1 or "?" in source2:
                                     lineChunks[9]="1"
-                        #if sourceQualCheck(source1) and (int(newPos2)-int(newPos))<21000:
                         if sourceQualCheck(source1) and (int(newPos2)-int(newPos))<21000:
                             lineChunks[3]=newChr
                             lineChunks[4]=newPos
