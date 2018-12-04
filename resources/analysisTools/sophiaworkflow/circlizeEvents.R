@@ -1,10 +1,26 @@
+#!/usr/bin/env Rscript
+
 library(circlize)
+
+textPdf <- function(filename, text) {
+    pdf(filename)
+    plot.new()
+    mtext(text)
+    dev.off()
+}
+
 args=commandArgs(TRUE)
 annosFile=args[1]
 pid=args[2]
 scoreThreshold=as.numeric(args[3])
 
 annos=read.delim(annosFile,header = TRUE,stringsAsFactors = FALSE)
+
+scaledOutput=paste(annosFile,"score",scoreThreshold,"scaled.pdf",sep="_")
+if(nrow(annos) == 0){
+    textPdf(scaledOutput, paste(basename(scaledOutput), "No data to plot.", sep=":\n"))
+    stop()
+}
 
 annos[,1]=as.character(annos[,1])
 annos[,4]=as.character(annos[,4])
@@ -23,9 +39,12 @@ annos=annos[!((startsWith(annos[,1],"h") |startsWith(annos[,1],"G") | startsWith
 annos=annos[!(annos[,1]=="hs37d5" & grepl("UNKNOWN",annos[,8])),]
 annos=annos[!(startsWith(annos[,1],"G") & grepl("UNKNOWN",annos[,8])),]
 annos=annos[!(startsWith(annos[,1],"N") & grepl("UNKNOWN",annos[,8])),]
-if(nrow(annos)==0){
+
+if(nrow(annos) == 0){
+    textPdf(scaledOutput, paste(basename(scaledOutput), "No data to plot.", sep=":\n"))
     stop()
 }
+
 annos$dummyChromosome=rep(FALSE,nrow(annos))
 
 mtLocs=annos[,4]=="MT"
@@ -143,7 +162,6 @@ eventScaledColors[telInsLocs]=rgb(t(col2rgb("purple"))/255, alpha = scaledAlphas
 }
 
 
-scaledOutput=paste(annosFile,"score",scoreThreshold,"scaled.pdf",sep="_")
 pdf(scaledOutput)
 circos.initializeWithIdeogram()
 circos.par(points.overflow.warning=FALSE)
