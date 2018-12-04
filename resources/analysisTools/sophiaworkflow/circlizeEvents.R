@@ -18,7 +18,7 @@ annos=read.delim(annosFile,header = TRUE,stringsAsFactors = FALSE)
 
 scaledOutput=paste(annosFile,"score",scoreThreshold,"scaled.pdf",sep="_")
 if(nrow(annos) == 0){
-    textPdf(scaledOutput, paste(basename(scaledOutput), "No data to plot.", sep=":\n"))
+    textPdf(scaledOutput, paste(basename(scaledOutput), "No data to plot in input file.", sep=":\n"))
     stop()
 }
 
@@ -41,7 +41,7 @@ annos=annos[!(startsWith(annos[,1],"G") & grepl("UNKNOWN",annos[,8])),]
 annos=annos[!(startsWith(annos[,1],"N") & grepl("UNKNOWN",annos[,8])),]
 
 if(nrow(annos) == 0){
-    textPdf(scaledOutput, paste(basename(scaledOutput), "No data to plot.", sep=":\n"))
+    textPdf(scaledOutput, paste(basename(scaledOutput), "No data to plot after filtering.", sep=":\n"))
     stop()
 }
 
