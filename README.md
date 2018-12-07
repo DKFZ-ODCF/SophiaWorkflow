@@ -21,7 +21,7 @@ TBD
 | bamfile_list               | A semicolon separated list of bamfiles (1. control, 2. tumor, ...) |
 | sample_list | Semicolon-separated list of sample names |
 | possibleControlSampleNamePrefixes | Space-separated list of prefix identifying control samples. Used for matching sample names in files when retrieving BAM metadata from pathnames. Always required. |
-| possibleTumorSampleNamePrefixes | Space-separated list of prefix identifying tumor samples. Used for matching sample names in files when retrieving BAM metadata from pathnames. Always required. |
+| possibleTumorSampleNamePrefixes | Space-separated list of prefixes identifying tumor samples. Used for matching sample names in files when retrieving BAM metadata from pathnames. Always required. |
 | controlDefaultReadLength    | Default read length |
 | tumorDefaultReadLength      | Default read length |
 | controlMedianIsize          | Median of control insert size distribution |
@@ -58,7 +58,16 @@ roddy.sh run $configName@$analysisName $pid \
 It is not possible anymore to provide the insert sizes via the `insertsizesfile_list` variable, like it was for the version 1.
 
 If you want to retrieve the BAM files and their metadata from the filesystem, you can also set `extractSamplesFromOutputFiles` to "true". Note however that this mode is less safe and clear than the more explicit way of calling the workflow. 
+
 ## Changelist
+
+* Version 2.1.0
+
+  * Updated to COWorkflowBasePlugin 1.3.0 that provides an alternative sample-name extraction algorithm.
+
+* Version 2.0.3
+
+  * Bugfix: PDF generation in very low data WES failed. Added "no data" PDFs. 
 
 * Version 2.0.2
 
