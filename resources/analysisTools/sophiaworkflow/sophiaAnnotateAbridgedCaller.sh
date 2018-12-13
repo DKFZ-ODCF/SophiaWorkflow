@@ -3,6 +3,14 @@
 ## ADDED TO TEST
 set -o pipefail -e
 
+grepIgnoreEmpty() {
+    set +e
+    grep "$@"
+    if [[ $? -gt 1 ]]; then
+        exit $?
+    fi
+}
+
 # Get rid of the extension: .bed.gz This is done for most of the files in Roddy, but some are left here. We still
 # need to figure out, if the files should all be passed as parameters.
 tumorFileRaw=${tumorFile:0:${#tumorFile}-7}
@@ -26,15 +34,13 @@ then
                                     --germlineoffset ${germlineFuzziness} --defaultreadlengthtumor ${tumorDefaultReadLength} --germlinedblimit ${germlineDbLimit} > ${ABRIDGED_ANNOTATION_TEMP}
 else
 	${SOPHIA_ANNOTATION_BINARY} --tumorresults ${tumorFile} --mref ${mRef} \
-                                    --controlresults ${bloodFile} --pidsinmref ${pidsInMref} --bpfreq ${bpFreq} \
+                                --controlresults ${bloodFile} --pidsinmref ${pidsInMref} --bpfreq ${bpFreq} \
 	                            --artifactlofreq ${artifactLoFreq} --artifacthifreq ${artifactHiFreq} \
 	                            --clonalitystrictlofreq ${clonalityStrictLoFreq} --clonalitylofreq ${clonalityLoFreq} --clonalityhifreq ${clonalityHiFreq} \
 	                            --germlineoffset ${germlineFuzziness} --defaultreadlengthtumor ${tumorDefaultReadLength} --defaultreadlengthcontrol ${controlDefaultReadLength} --germlinedblimit ${germlineDbLimit} > ${ABRIDGED_ANNOTATION_TEMP}
 fi
 
-set +e
-grep $'^#' ${ABRIDGED_ANNOTATION_TEMP} > ${ABRIDGED_ANNOTATION}.WARNINGS
-set -e
+grepIgnoreEmpty $'^#' ${ABRIDGED_ANNOTATION_TEMP} > ${ABRIDGED_ANNOTATION}.WARNINGS
 
 # CREATE THE START OF THE QC JSON FILE
 touch $QC_JSON_FILE_TMP
@@ -60,7 +66,7 @@ then
 	rm ${ABRIDGED_ANNOTATION}.WARNINGS
 fi
 
-grep -v $'^#' ${ABRIDGED_ANNOTATION_TEMP} | awk '($4 != "NA")' | grep -v "GL00" | sort -V -k 1,1 -k2,2 -k4,4 -k5,5 > ${ABRIDGED_ANNOTATION}
+grepIgnoreEmpty -v $'^#' ${ABRIDGED_ANNOTATION_TEMP} | awk '($4 != "NA")' | grepIgnoreEmpty -v "GL00" | sort -V -k 1,1 -k2,2 -k4,4 -k5,5 > ${ABRIDGED_ANNOTATION}
 rm ${ABRIDGED_ANNOTATION_TEMP}
 
 cut -f 1-3 ${ABRIDGED_ANNOTATION} | cat -n | sed 's/ //g' | awk -v OFS='\t'  '{print $2, $3, $4, $1}' > ${FILE_DUM}leftCoords
@@ -103,7 +109,7 @@ MERGED_RNACONTCANDIDATES_MORETHAN2INTRONS=${BEDPE_RESULT_FILE_FILTERED}_rnaConta
 #TEMPORARY FILES QC END
 ${PYTHON_BINARY} ${TOOL_RNACONT_DEL_EXTRACTOR_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED}  > ${MERGED_DELEXTRACT}
 ${BEDTOOLS_BINARY} intersect -a ${MERGED_DELEXTRACT} -b ${exonsOnlyPaddedRefBed} -wa -wb > ${MERGED_DELEXTRACTINTERSECT}
-${PYTHON_BINARY} ${TOOL_RNACONT_DEL_COUNTER_SCRIPT} ${MERGED_DELEXTRACTINTERSECT} | grep -v $'\t1$' >  ${MERGED_RNACONTCANDIDATES_MORETHAN2INTRONS}
+${PYTHON_BINARY} ${TOOL_RNACONT_DEL_COUNTER_SCRIPT} ${MERGED_DELEXTRACTINTERSECT} | grepIgnoreEmpty -v $'\t1$' >  ${MERGED_RNACONTCANDIDATES_MORETHAN2INTRONS}
 MERGED_RNA_CONTAMINATED_GENES="`cat ${MERGED_RNACONTCANDIDATES_MORETHAN2INTRONS} | wc -l`"
 
 
@@ -133,8 +139,8 @@ rm ${MERGED_DELEXTRACTINTERSECT}
 
 if [[ -e "${bloodFile}" ]]
 then
-	cat <(head -n 1 ${BEDPE_RESULT_FILE_FILTERED})  <(grep GERMLINE ${BEDPE_RESULT_FILE_FILTERED}) | uniq > ${BEDPE_RESULT_FILE_FILTERED_GERMLINE}
-	grep -v GERMLINE ${BEDPE_RESULT_FILE_FILTERED}  > ${BEDPE_RESULT_FILE_FILTERED_SOMATIC}
+	cat <(head -n 1 ${BEDPE_RESULT_FILE_FILTERED})  <(grepIgnoreEmpty GERMLINE ${BEDPE_RESULT_FILE_FILTERED}) | uniq > ${BEDPE_RESULT_FILE_FILTERED_GERMLINE}
+	grepIgnoreEmpty -v GERMLINE ${BEDPE_RESULT_FILE_FILTERED}  > ${BEDPE_RESULT_FILE_FILTERED_SOMATIC}
 
         # FILTERING FOR ACESEQ WILL COME HERE
         awk '$10>=3' ${BEDPE_RESULT_FILE_FILTERED_SOMATIC} > ${BEDPE_RESULT_FILE_FILTERED_SOMATIC_ACESEQ}
