@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from sys import argv,stderr
 inputPath=argv[1]
 lineIndex=0

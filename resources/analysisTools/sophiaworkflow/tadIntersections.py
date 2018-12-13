@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import numpy as np
 from sys import argv,stderr
 from itertools import chain
