@@ -1,17 +1,15 @@
 #!/bin/bash
-set -e
 
-fileNameIfExists() {
-    if [[ -f "$1" ]]; then
-        echo "$1"
+set -e -o pipefail
+
+grepIgnoreEmpty() {
+    set +e
+    grep "$@"
+    if [[ $? -gt 1 ]]; then
+        exit $?
     fi
 }
 
-rmIfExists() {
-    if [[ -f "$1" ]]; then
-        rm "$1"
-    fi
-}
 
 tumorFileRaw=${tumorFile:0:${#tumorFile}-7}
 tumorFileRaw=${outputAnalysisBaseDirectory}/${tumorFileRaw##*/}
@@ -44,12 +42,11 @@ else
 fi
 
 
-set +e
-grep $'^#' ${ABRIDGED_ANNOTATION}Pre | grep -v $'^##' > ${ABRIDGED_ANNOTATION}.WARNINGS
-grep $'^##' ${ABRIDGED_ANNOTATION}Pre  | sed 's/^##//'> "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES"
-set -e
+grepIgnoreEmpty $'^#' ${ABRIDGED_ANNOTATION}Pre | grepIgnoreEmpty -v $'^##' > ${ABRIDGED_ANNOTATION}.WARNINGS
+grepIgnoreEmpty $'^##' ${ABRIDGED_ANNOTATION}Pre  | sed 's/^##//' > "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES"
 
-grep -v $'^#' ${ABRIDGED_ANNOTATION}Pre | awk '($4 != "NA")' | awk '$10 > 0' | sort -V -k 1,1 -k2,2 -k4,4 -k5,5 > ${ABRIDGED_ANNOTATION}_preRemap
+
+grepIgnoreEmpty -v $'^#' ${ABRIDGED_ANNOTATION}Pre | awk '($4 != "NA")' | awk '$10 > 0' | sort -V -k 1,1 -k2,2 -k4,4 -k5,5 > ${ABRIDGED_ANNOTATION}_preRemap
 
 
 ${PYTHON_BINARY} ${TOOL_DECOY_MAPPER_SCRIPT} ${decoyRangeRefBed} ${ABRIDGED_ANNOTATION}_preRemap | sort -V -k 1,1 -k2,2 -k4,4 -k5,5 > ${ABRIDGED_ANNOTATION}_tmp
@@ -103,8 +100,8 @@ MERGED_RNACONTCANDIDATES_MORETHAN2INTRONS=${BEDPE_RESULT_FILE_FILTERED}_rnaConta
 #TEMPORARY FILES QC END
 ${PYTHON_BINARY} ${TOOL_RNACONT_DEL_EXTRACTOR_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED}  > ${MERGED_DELEXTRACT}
 ${BEDTOOLS_BINARY} intersect -a ${MERGED_DELEXTRACT} -b ${exonsOnlyPaddedRefBed} -wa -wb > ${MERGED_DELEXTRACTINTERSECT}
-${PYTHON_BINARY} ${TOOL_RNACONT_DEL_COUNTER_SCRIPT} ${MERGED_DELEXTRACTINTERSECT} | grep -v $'\t1$' >  ${MERGED_RNACONTCANDIDATES_MORETHAN2INTRONS}
-MERGED_RNA_CONTAMINATED_GENES="`grep -v locus ${MERGED_RNACONTCANDIDATES_MORETHAN2INTRONS} | wc -l`"
+${PYTHON_BINARY} ${TOOL_RNACONT_DEL_COUNTER_SCRIPT} ${MERGED_DELEXTRACTINTERSECT} | grepIgnoreEmpty -v $'\t1$' >  ${MERGED_RNACONTCANDIDATES_MORETHAN2INTRONS}
+MERGED_RNA_CONTAMINATED_GENES="`grepIgnoreEmpty -v locus ${MERGED_RNACONTCANDIDATES_MORETHAN2INTRONS} | wc -l`"
 if [[ "${MERGED_RNA_CONTAMINATED_GENES}" -ge "11" ]]
 then
 	mv ${BEDPE_RESULT_FILE_FILTERED} ${BEDPE_RESULT_FILE_FILTERED}.preRnaRescue
@@ -122,11 +119,11 @@ ${PYTHON_BINARY} ${TOOL_DEDUP_RESULTS_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED} ${tu
 
 if [[ -e "${bloodFile}" ]]
 then
-	cat <(head -n 1 ${BEDPE_RESULT_FILE_FILTERED})  <(grep GERMLINE ${BEDPE_RESULT_FILE_FILTERED}) | uniq > ${BEDPE_RESULT_FILE_FILTERED_GERMLINE}
-	grep -v GERMLINE ${BEDPE_RESULT_FILE_FILTERED}  > ${BEDPE_RESULT_FILE_FILTERED_SOMATIC}
+	cat <(head -n 1 ${BEDPE_RESULT_FILE_FILTERED})  <(grepIgnoreEmpty GERMLINE ${BEDPE_RESULT_FILE_FILTERED}) | uniq > ${BEDPE_RESULT_FILE_FILTERED_GERMLINE}
+	grepIgnoreEmpty -v GERMLINE ${BEDPE_RESULT_FILE_FILTERED}  > ${BEDPE_RESULT_FILE_FILTERED_SOMATIC}
 	
-	cat <(head -n 1 ${BEDPE_RESULT_FILE_FILTERED_DEDUP})  <(grep GERMLINE ${BEDPE_RESULT_FILE_FILTERED_DEDUP}) | uniq > ${BEDPE_RESULT_FILE_FILTERED_DEDUP_GERMLINE}
-	grep -v GERMLINE ${BEDPE_RESULT_FILE_FILTERED_DEDUP}  > ${BEDPE_RESULT_FILE_FILTERED_DEDUP_SOMATIC}
+	cat <(head -n 1 ${BEDPE_RESULT_FILE_FILTERED_DEDUP})  <(grepIgnoreEmpty GERMLINE ${BEDPE_RESULT_FILE_FILTERED_DEDUP}) | uniq > ${BEDPE_RESULT_FILE_FILTERED_DEDUP_GERMLINE}
+	grepIgnoreEmpty -v GERMLINE ${BEDPE_RESULT_FILE_FILTERED_DEDUP}  > ${BEDPE_RESULT_FILE_FILTERED_DEDUP_SOMATIC}
 	
 	awk '$10>2' ${BEDPE_RESULT_FILE_FILTERED_SOMATIC} > ${BEDPE_RESULT_FILE_FILTERED_SOMATIC_ACESEQ}
 	set +e
@@ -143,13 +140,13 @@ then
     mv "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES" "${BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES/.tmp/}"
 
     pdfunite \
-	    $(fileNameIfExists "${BEDPE_RESULT_FILE_FILTERED_SOMATIC}_score_${circlizeScoreThreshold}_scaled.pdf") \
-	    $(fileNameIfExists "${BEDPE_RESULT_FILE_FILTERED_GERMLINE}_score_${circlizeScoreThreshold}_scaled.pdf") \
-	    $(fileNameIfExists "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf") \
+	    "${BEDPE_RESULT_FILE_FILTERED_SOMATIC}_score_${circlizeScoreThreshold}_scaled.pdf" \
+	    "${BEDPE_RESULT_FILE_FILTERED_GERMLINE}_score_${circlizeScoreThreshold}_scaled.pdf" \
+	    "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf" \
 	    "${BEDPE_RESULT_FILE_FILTERED_PDF}"
-	rmIfExists "${BEDPE_RESULT_FILE_FILTERED_SOMATIC}_score_${circlizeScoreThreshold}_scaled.pdf"
-	rmIfExists "${BEDPE_RESULT_FILE_FILTERED_GERMLINE}_score_${circlizeScoreThreshold}_scaled.pdf"
-    rmIfExists "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf"
+	rm "${BEDPE_RESULT_FILE_FILTERED_SOMATIC}_score_${circlizeScoreThreshold}_scaled.pdf"
+	rm "${BEDPE_RESULT_FILE_FILTERED_GERMLINE}_score_${circlizeScoreThreshold}_scaled.pdf"
+    rm "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf"
 
 else
 	awk '$10>2' ${BEDPE_RESULT_FILE_FILTERED} > ${BEDPE_RESULT_FILE_FILTERED_ACESEQ}
