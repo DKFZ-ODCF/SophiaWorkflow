@@ -7,7 +7,7 @@ import de.dkfz.b080.co.files.Sample
 import de.dkfz.roddy.config.Configuration
 import de.dkfz.roddy.config.ConfigurationError
 import de.dkfz.roddy.config.ConfigurationValue
-import de.dkfz.roddy.config.RecursiveOverridableMapContainerForConfigurationValues
+import de.dkfz.roddy.config.RecursiveOverridableMapContainerForConfigurationValues as RecCont
 import de.dkfz.roddy.core.ExecutionContext
 import de.dkfz.roddy.core.ExecutionContextError
 import de.dkfz.roddy.knowledge.files.BaseFile
@@ -53,7 +53,7 @@ class SophiaWorkflow extends WorkflowUsingMergedBams {
         boolean fullWorkflow = bamControlMerged
 
         Configuration configuration = context.configuration
-        RecursiveOverridableMapContainerForConfigurationValues configurationValues = configuration.configurationValues
+        RecCont configurationValues = configuration.configurationValues
 
         configurationValues <<
                 new ConfigurationValue('tumorSample', (bamTumorMerged.fileStage as COFileStageSettings).sample.name)
@@ -83,27 +83,13 @@ class SophiaWorkflow extends WorkflowUsingMergedBams {
         }
     }
 
-    /* Move the following three functions to a superclass. */
-    List<BasicBamFile> getControlBamFiles() {
-        loadInitialBamFilesForDataset(context).findAll { it.sample.sampleType == Sample.SampleType.CONTROL } as List
-    }
-
-    List<BasicBamFile> getTumorBamFiles() {
-        loadInitialBamFilesForDataset(context).findAll { it.sample.sampleType == Sample.SampleType.TUMOR } as List
-    }
-
-    List<BasicBamFile> getUnkownBamFiles() {
-        loadInitialBamFilesForDataset(context).findAll { it.sample.sampleType == Sample.SampleType.UNKNOWN } as List
-    }
-
-
     @Override
-    boolean checkExecutability(ExecutionContext context) {
-        boolean initialBamCheck = super.checkExecutability(context)
+    boolean checkExecutability() {
+        boolean initialBamCheck = super.checkExecutability()
         if (!initialBamCheck)
             return false
 
-        loadInitialBamFilesForDataset(context)
+        loadInitialBamFilesForDataset()
 
         def configurationValues = context.getConfigurationValues()
         boolean bamListIsSet = configurationValues.hasValue(BAMFILE_LIST)
