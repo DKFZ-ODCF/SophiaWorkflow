@@ -173,7 +173,7 @@
                 <output type="file" typeof="AnnotationFilteredSomaticBedpeFileTmVsCntrlACEseq" scriptparameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC_ACESEQ"/>
                 <output type="file" typeof="AnnotationFilteredQJsonTmVsCntrl" scriptparameter="QC_JSON_FILE"/>
                 <output type="file" typeof="AnnotationFilteredSomaticBedpeFileTmVsCntrlACEseqOverhangCandidates" check="false"
-                scriptparameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES"/>
+                        scriptparameter="BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES"/>
             </output>
         </tool>
     </processingTools>
@@ -183,6 +183,8 @@
 
         <filename class='AnnotationFilteredBedpeFileNoControl'           derivedFrom='SophiaOutputBedpe'
                   pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_${tumorSample}-only_filtered.tsv'/>
+        <filename class='AnnotationFilteredBedpeFileNoControlPdf'           derivedFrom='SophiaOutputBedpe'
+                  pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_${tumorSample}-only_filtered.pdf'/>
         <filename class='AnnotationFilteredDedupBedpeFileNoControl'           derivedFrom='SophiaOutputBedpe'
                   pattern='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}/svs_${pid}_${tumorSample}-only_filtered_dedup.tsv'/>
 
