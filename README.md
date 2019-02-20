@@ -18,6 +18,7 @@ TBD
 
 | Switch                     | Default Description |
 |----------------------------|---------------------|
+| REFERENCES_BASE            | Path to the installation of the reference files. |
 | bamfile_list               | A semicolon separated list of bamfiles (1. control, 2. tumor, ...) |
 | sample_list | Semicolon-separated list of sample names |
 | possibleControlSampleNamePrefixes | Space-separated list of prefix identifying control samples. Used for matching sample names in files when retrieving BAM metadata from pathnames. Always required. |
@@ -40,6 +41,7 @@ Most metadata are best provided via dedicated variables.
 roddy.sh run $configName@$analysisName $pid \
   --useconfig=/path/to/your/applicationProperties.ini \
   --configurationValues="\
+      REFERENCES_BASE:/the/path/to/your/sophia/35/reference/files,\
       bamfile_list:$controlBam;$tumorBam,\
       sample_list:$controlName;$tumorName,
       possibleControlSampleNamePrefixes:$controlName,\
@@ -59,7 +61,15 @@ It is not possible anymore to provide the insert sizes via the `insertsizesfile_
 
 If you want to retrieve the BAM files and their metadata from the filesystem, you can also set `extractSamplesFromOutputFiles` to "true". Note however that this mode is less safe and clear than the more explicit way of calling the workflow. 
 
-## Changelist
+## Change Log
+
+* Version 2.1.2
+
+  * Bugfix: In no-control case the PDF file path was not defined.
+
+* Version 2.1.1
+
+  * Bugfix: Fixed another situation where PDFs were not generated
 
 * Version 2.1.0
 
