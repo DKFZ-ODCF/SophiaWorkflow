@@ -71,7 +71,8 @@
         <cvalue name="STANDARDHEADER" value='"#chrom1\tstart1\tend1\tchrom2\tstart2\tend2\tsomaticity1\tsomaticity2\tsvtype\teventScore\teventSize\teventInversion\tevidence1\tclonalityRatio1\tevidence2\tclonalityRatio2\tsource1\tsource2\toverhang1\toverhang2\tgene1\tcancerGene1\tnearestCodingGeneUpstream1\tnearestCodingGeneUpstreamDistance1\tnearestCancerGeneUpstream1\tnearestCancerGeneUpstreamDistance1\tnearestCodingGeneDownstream1\tnearestCodingGeneDownstreamDistance1\tnearestCancerGeneDownstream1\tnearestCancerGeneDownstreamDistance1\tgene2\tcancerGene2\tnearestCodingGeneUpstream2\tnearestCodingGeneUpstreamDistance2\tnearestCancerGeneUpstream2\tnearestCancerGeneUpstreamDistance2\tnearestCodingGeneDownstream2\tnearestCodingGeneDownstreamDistance2\tnearestCancerGeneDownstream2\tnearestCancerGeneDownstreamDistance2\tdbSUPERenhancer1\tdbSUPERenhancer2\trescuedEnhancerHitCandidate\tTADindices\taffectedGenesTADestimate\taffectedCancerGenesTADestimate\tchrom1PreDecoyRemap\tstart1PreDecoyRemap\tend1PreDecoyRemap\tchrom2PreDecoyRemap\tstart2PreDecoyRemap\tend2PreDecoyRemap"' description=""/>
 
         <!-- DATABASES AND REFERENCE FILES -->
-        <cvalue name='REFERENCES_BASE' value='/icgc/dkfzlsdf/analysis/B080/kensche/RoddyProject_Roddy3.0/referenceFiles/sophia/35.0' type='path' />
+        <cvalue name='REFERENCES_BASE' value='' type='path'
+                description="Set this path to where all the reference files are installed."/>
 
         <cvalue name="decoyRangeRefBed" value="${REFERENCES_BASE}/decoyRangeRefNew.bed" type="path"/>
         <cvalue name='consensusTadReferenceBed' value='${REFERENCES_BASE}/consensusTADs_3_new_allChromosomes_cytobands_gencodeV27genes.names.bed' type='path'/>
