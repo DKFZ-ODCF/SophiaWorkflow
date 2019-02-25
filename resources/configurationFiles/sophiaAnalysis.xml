@@ -37,13 +37,11 @@
         <!-- ## Imported from commonCOWorkflowsSettings -->
         <cvalue name='SEQUENCER_PROTOCOL' value='paired' type="string" description="only paired read sequencing is currently supported"/>
 
-        <!-- ## DIRECTORIES -->
+        <!-- ## SUBDIRECTORIES of outputAnalysisBaseDirectory (note: type = "string") -->
         <cvalue name='alignmentOutputDirectory' value='alignment' type='string'/>
         <cvalue name='insertSizesOutputDirectory' value='insertsize_distribution'/>
         <cvalue name='qcOutputDirectory' value='qualitycontrol' type='string'/>
         <cvalue name='sophiaOutputDirectory' value='SOPHIA_${tumorSample}_${controlSample}' type='string'/>
-        <cvalue name='ALIGNMENT_DIR' value='${outputAnalysisBaseDirectory}/${alignmentOutputDirectory}' type='path'/>
-        <cvalue name='SOPHIA_DIR' value='${outputAnalysisBaseDirectory}/${sophiaOutputDirectory}' type='path'/>
 
         <!-- Software modules - if enabled these will over ride the binary definitions -->
         <cvalue name="workflowEnvironmentScript" value="workflowEnvironment_tbiLsf" type="string"/>

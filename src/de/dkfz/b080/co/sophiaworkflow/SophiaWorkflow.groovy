@@ -41,7 +41,7 @@ class SophiaWorkflow extends WorkflowUsingMergedBams {
         ].collectEntries(result) { varname ->
             String cvalueName = "${sampleType.name().toLowerCase()}${varname.capitalize()}"
             String cvalue = config.configurationValues.getString(cvalueName)
-            if (cvalue.empty)
+            if (cvalue.empty || cvalue == "")
                 throw new ConfigurationError("Configuration value '${cvalueName}' is unset", config)
             new MapEntry(varname, cvalue)
         }

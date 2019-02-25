@@ -14,6 +14,22 @@ TBD
 
 ## Configuration
 
+All output goes to `outputAnalysisBaseDirectory`, which is the output base directory (`outputBaseDirectory`) given on the command line via `--useiodir` with the dataset identifier as subdirectory, i.e.
+
+```
+outputAnalysisBaseDirectory=$outputBaseDirectory/$dataSet
+```
+
+The output includes the `roddyExecutionStore` with the execution metadata. Usually, one additionally configures a `sophiaOutputDirectory` into which all SOPHIA output datat is written. Thus the output will go to:
+
+```
+$outputBaseDirectory/$dataSet/roddyExecutionStore
+$outputBaseDirectory/$dataSet/$sophiaOutputDirectory
+```
+
+If you want all output to go into the `outputAnalysisBaseDirectory` just set `sophiaOutputDirectory` to an empty string or ".".
+
+
 ### Run flags / switches / passable values
 
 | Switch                     | Default Description |
@@ -54,17 +70,15 @@ roddy.sh run $configName@$analysisName $pid \
       tumorStdIsizePercentage:${tumorStdIsizePercentage},\
       controlProperPairPercentage:${controlProperPairPercentage},\
       tumorProperPairPercentage:${tumorProperPairPercentage}"
-
 ```
 
-It is not possible anymore to provide the insert sizes via the `insertsizesfile_list` variable, like it was for the version 1.
-
-If you want to retrieve the BAM files and their metadata from the filesystem, you can also set `extractSamplesFromOutputFiles` to "true". Note however that this mode is less safe and clear than the more explicit way of calling the workflow. 
+With version 2, it is not possible anymore to provide the insert sizes via the `insertsizesfile_list` variable, like it was for the version 1. We strongly suggest you configure the workflow metadata manually, like shown above. However, if you want to retrieve the BAM files and their metadata from the filesystem, you can set `extractSamplesFromOutputFiles` to "true". This mode is less safe and clear than the more explicit way of calling the workflow and it should only work smoothly with the output of the AlignmentAndQCWorkflows Roddy-plugin. Furthermore, the `alignmentOutputDirectory` (default "alignment"), `insertSizesOutputDirectory` (default "insertsize_distribution", and `qcOutputDirectory` (default "qualitycontrol") need to be set correctly (and be of type "string" as preconfigured in the XML).
 
 ## Change Log
 
-* Version 2.2 (WIP)
+* Version 2.2.0
 
+  * Fix ignoring of `sophiaOutputDirectory` for `$sampleType_$pid_bps_annotatedAbridged.bedpe.WARNINGS` file resulting in wrong location of the file
   * Update to COWorkflowBasePlugin 1.4.0
   * Update to Roddy 3.5
   * Added executability check for sample metadata configuration values

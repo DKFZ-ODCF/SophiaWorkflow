@@ -11,8 +11,6 @@ grepIgnoreEmpty() {
 }
 
 
-tumorFileRaw=${tumorFile:0:${#tumorFile}-7}
-tumorFileRaw=${outputAnalysisBaseDirectory}/${tumorFileRaw##*/}
 
 #IMPORTANT FILES
 BEDPE_RESULT_FILE_FILTERED="$BEDPE_RESULT_FILE_FILTERED.tmp"
@@ -29,6 +27,7 @@ BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES="$BEDPE_RESULT_FILE_FILTE
 #IMPORTANT FILES END
 
 #TEMPORARY FILES
+tumorFileRaw="$outputAnalysisBaseDirectory/$sophiaOutputDirectory/"$(basename "$tumorFile" .tsv.gz)
 ABRIDGED_ANNOTATION=${tumorFileRaw}_annotatedAbridged.bedpe
 ABRIDGED_ANNOTATION_CONTEXT="${tumorFileRaw}_annotatedAbridgedContext.bedpe.tmp"
 FILE_DUM=${tumorFileRaw}_dum
