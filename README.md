@@ -82,6 +82,8 @@ With version 2, it is not possible anymore to provide the insert sizes via the `
   * Update to COWorkflowBasePlugin 1.4.0
   * Update to Roddy 3.5
   * Added executability check for sample metadata configuration values
+  * Consistent usage of grepIgnoreEmpty to handle input files without matches for low-coverage/WES input data
+  * Documentation
 
 * Version 2.1.2
 
@@ -112,6 +114,19 @@ With version 2, it is not possible anymore to provide the insert sizes via the `
 
   * Sophia version 35.
   
-* Version 1.2
+* Version 1.2.18
+
+  * Consistent usage of grepIgnoreEmpty to handle input files without matches for low-coverage/WES input data
+  
+* Version 1.2.17
+
+  * Fixed some greps to ignore non-matching input files for low-coverage/WES input data
+
+* Version 1.2.16
+
+  * Migration to Roddy 3 and its LSF support
+  * Environment scripts for DKFZ-ODCF cluster
+  
+* Version 1.0.16
 
   * Sophia version 34.

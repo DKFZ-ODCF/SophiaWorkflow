@@ -2,15 +2,16 @@
 
 set -e -o pipefail
 
+# Grep returns 1 if no match is found. Ensure that empty files are handled gracefully without exit due to `set -e`.
 grepIgnoreEmpty() {
-    set +e
+    (set +e    # The parentheses keep the `set -e` in the local subshell.
     grep "$@"
     if [[ $? -gt 1 ]]; then
-        exit $?
-    fi
+        return $?
+    else
+        return 0
+    fi)
 }
-
-
 
 #IMPORTANT FILES
 BEDPE_RESULT_FILE_FILTERED="$BEDPE_RESULT_FILE_FILTERED.tmp"
@@ -168,14 +169,14 @@ echo -e "{\n  \"all\": {" > $QC_JSON_FILE
 # FOREACH WARNING ADD A VALUE TO THE QC JSON FILE
 controlMassiveInvPrefilteringLevel=0
 tumorMassiveInvFilteringLevel=0
-if [[ "`grep controlMassiveInvPrefilteringLevel ${ABRIDGED_ANNOTATION}.WARNINGS | wc -l`" != "0" ]]
+if [[ "`grepIgnoreEmpty controlMassiveInvPrefilteringLevel ${ABRIDGED_ANNOTATION}.WARNINGS | wc -l`" != "0" ]]
 then
-	controlMassiveInvPrefilteringLevel=`grep controlMassiveInvPrefilteringLevel ${ABRIDGED_ANNOTATION}.WARNINGS | cut -f 2`
+	controlMassiveInvPrefilteringLevel=`grepIgnoreEmpty controlMassiveInvPrefilteringLevel ${ABRIDGED_ANNOTATION}.WARNINGS | cut -f 2`
 fi
 
-if [[ "`grep tumorMassiveInvFilteringLevel ${ABRIDGED_ANNOTATION}.WARNINGS | wc -l`" != "0" ]]
+if [[ "`grepIgnoreEmpty tumorMassiveInvFilteringLevel ${ABRIDGED_ANNOTATION}.WARNINGS | wc -l`" != "0" ]]
 then
-        tumorMassiveInvFilteringLevel=`grep tumorMassiveInvFilteringLevel ${ABRIDGED_ANNOTATION}.WARNINGS | cut -f 2`
+        tumorMassiveInvFilteringLevel=`grepIgnoreEmpty tumorMassiveInvFilteringLevel ${ABRIDGED_ANNOTATION}.WARNINGS | cut -f 2`
 fi
 
 echo "    \"controlMassiveInvPrefilteringLevel\": ${controlMassiveInvPrefilteringLevel}," >> $QC_JSON_FILE
