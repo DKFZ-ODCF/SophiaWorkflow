@@ -4,13 +4,13 @@
 
 ## Installation
 
-### Software Stack
+### Software Stack & Reference Data
 
-TBD
+Please refer to the documentation of the [Sophia](https://bitbucket.org/utoprak/sophia) tool for information on the bioinformatic software stack and reference data.
 
-### Reference Data
+Please refer to the documentation of [Roddy](https://github.com/TheRoddyWMS/Roddy) for software requirements of the workflow management system.
 
-TBD
+The workflow depends on the [COWorkflowBasePlugin](https://github.com/DKFZ-ODCF/COWorkflowsBasePlugin). Please refer to the `buildinfo.txt` in the plugin root directory to see which version is required for the specific version of this plugin you want to install.
 
 ## Configuration
 
@@ -84,10 +84,11 @@ With version 2, it is not possible anymore to provide the insert sizes via the `
   * Added executability check for sample metadata configuration values
   * Consistent usage of grepIgnoreEmpty to handle input files without matches for low-coverage/WES input data
   * Documentation
+  * GPL 2+
 
 * Version 2.1.2
 
-  * Bugfix: In no-control case the PDF file path was not defined.
+  * Bugfix: In no-control case a PDF file path was not defined.
 
 * Version 2.1.1
 
@@ -130,3 +131,7 @@ With version 2, it is not possible anymore to provide the insert sizes via the `
 * Version 1.0.16
 
   * Sophia version 34.
+  
+# License
+
+See the [licence file](LICENSE.md).
