@@ -76,7 +76,7 @@ With version 2, it is not possible anymore to provide the insert sizes via the `
 
 ## Change Log
 
-* Version 2.2.0
+* WiP (2.2.0)
 
   * Fix ignoring of `sophiaOutputDirectory` for `$sampleType_$pid_bps_annotatedAbridged.bedpe.WARNINGS` file resulting in wrong location of the file
   * Update to COWorkflowBasePlugin 1.4.0
