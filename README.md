@@ -43,10 +43,10 @@ If you want all output to go into the `outputAnalysisBaseDirectory` just set `so
 | tumorDefaultReadLength      | Default read length |
 | controlMedianIsize          | Median of control insert size distribution |
 | tumorMedianIsize            | Median of tumor insert size distribution |
-| controlStdIsizePercentage   | Quotient of median and standard deviation of the control insert size distribution |   
-| tumorStdIsizePercentage     | Quotient of median and standard deviation of the tumor insert size distribution |
-| controlProperPairPercentage | Percentage of properly paired read pairs in control |
-| tumorProperPairPercentage   | Percentage of properly paired read pairs in tumor |
+| controlStdIsizePercentage   | Quotient of median and standard deviation of the control insert size distribution expressed as percentage (0-100) |   
+| tumorStdIsizePercentage     | Quotient of median and standard deviation of the tumor insert size distribution expressed as percentage (0-100) |
+| controlProperPairPercentage | Percentage (0-100) of properly paired read pairs in control |
+| tumorProperPairPercentage   | Percentage (0-100) of properly paired read pairs in tumor |
 --------------------------------
 
 ## Starting the Workflow
