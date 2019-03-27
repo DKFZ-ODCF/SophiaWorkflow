@@ -39,14 +39,14 @@ If you want all output to go into the `outputAnalysisBaseDirectory` just set `so
 | sample_list | Semicolon-separated list of sample names |
 | possibleControlSampleNamePrefixes | Space-separated list of prefix identifying control samples. Used for matching sample names in files when retrieving BAM metadata from pathnames. Always required. |
 | possibleTumorSampleNamePrefixes | Space-separated list of prefixes identifying tumor samples. Used for matching sample names in files when retrieving BAM metadata from pathnames. Always required. |
-| controlDefaultReadLength    | Default read length |
-| tumorDefaultReadLength      | Default read length |
-| controlMedianIsize          | Median of control insert size distribution |
-| tumorMedianIsize            | Median of tumor insert size distribution |
-| controlStdIsizePercentage   | Quotient of median and standard deviation of the control insert size distribution expressed as percentage (0-100) |   
-| tumorStdIsizePercentage     | Quotient of median and standard deviation of the tumor insert size distribution expressed as percentage (0-100) |
-| controlProperPairPercentage | Percentage (0-100) of properly paired read pairs in control |
-| tumorProperPairPercentage   | Percentage (0-100) of properly paired read pairs in tumor |
+| controlDefaultReadLength    | Default read length \[base pairs\] |
+| tumorDefaultReadLength      | Default read length \[base pairs\] |
+| controlMedianIsize          | Median of control insert size distribution \[base pairs\] |
+| tumorMedianIsize            | Median of tumor insert size distribution \[base pairs\] |
+| controlStdIsizePercentage   | \[median insert size / standard deviation insert size * 100\] |   
+| tumorStdIsizePercentage     | \[median insert size / standard deviation insert size * 100\] |
+| controlProperPairPercentage | Properly paired read pairs in control \[#(properly paired) / #(paired) * 100\] |
+| tumorProperPairPercentage   | Properly paired read pairs in tumor \[#(properly paired) / #(paired) * 100\]|
 --------------------------------
 
 ## Starting the Workflow
@@ -76,13 +76,17 @@ With version 2, it is not possible anymore to provide the insert sizes via the `
 
 ## Change Log
 
-* WiP (2.2.0)
+* 2.2.0
 
   * Fix ignoring of `sophiaOutputDirectory` for `$sampleType_$pid_bps_annotatedAbridged.bedpe.WARNINGS` file resulting in wrong location of the file
-  * Update to COWorkflowBasePlugin 1.4.0
   * Update to Roddy 3.5
+  * Update to COWorkflowBasePlugin 1.4.0
+  * Bugfix: grepIgnoreEmpty (set +e on global environment was removed)
+  * Bugfix: correct location of tumor file in caller
   * Added executability check for sample metadata configuration values
+  * Refactorings to improve Bash code robustness 
   * Consistent usage of grepIgnoreEmpty to handle input files without matches for low-coverage/WES input data
+  * Update to newer workflow API (Roddy 3.5)
   * Documentation
   * GPL 2+
 
