@@ -76,6 +76,10 @@ With version 2, it is not possible anymore to provide the insert sizes via the `
 
 ## Change Log
 
+* 2.2.1
+
+  * Bugfix: intersectionCollapsing.py produces empty output instead of dot-line on empty input. Avoid downsteam int-cast error
+
 * 2.2.0
 
   * Fix ignoring of `sophiaOutputDirectory` for `$sampleType_$pid_bps_annotatedAbridged.bedpe.WARNINGS` file resulting in wrong location of the file
