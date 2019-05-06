@@ -21,7 +21,7 @@ from sys import argv
 inputFile = argv[1]
 
 
-def print_line(hit_str, cancer_hit_str, super_enhancer_hit_str):
+def print_line(hit_str: str, cancer_hit_str: str, super_enhancer_hit_str: str):
     """Print a line of information unless it is trivial/all '.'"""
     if hit_str != "." or cancer_hit_str != "." or super_enhancer_hit_str != ".":
         print(hit_str, cancer_hit_str, super_enhancer_hit_str, sep='\t')
@@ -46,7 +46,7 @@ with open(inputFile) as f:
                     cancerHitStr = ','.join(cancerGeneHits)
                 if len(superEnhancerHits) != 0:
                     superEnhancerHitStr = ','.join(superEnhancerHits)
-                print_line(hitStr, cancerHitStr, superEnhancerHits)
+                print_line(hitStr, cancerHitStr, superEnhancerHitStr)
             lastID = ID
             geneHits = set()
             cancerGeneHits = set()
