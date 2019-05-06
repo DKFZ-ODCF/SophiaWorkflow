@@ -57,7 +57,6 @@ else
 	${SOPHIA_ANNOTATION_BINARY} --tumorresults ${tumorFile} --mref ${mRef} --controlresults ${bloodFile} --pidsinmref ${pidsInMref} --bpfreq ${bpFreq} --artifactlofreq ${artifactLoFreq} --artifacthifreq ${artifactHiFreq} --clonalitystrictlofreq ${clonalityStrictLoFreq} --clonalitylofreq ${clonalityLoFreq} --clonalityhifreq ${clonalityHiFreq} --germlineoffset ${germlineFuzziness} --defaultreadlengthtumor ${tumorDefaultReadLength} --defaultreadlengthcontrol ${controlDefaultReadLength} --germlinedblimit ${germlineDbLimit} > ${ABRIDGED_ANNOTATION}Pre
 fi
 
-
 grepIgnoreEmpty $'^#' ${ABRIDGED_ANNOTATION}Pre | grepIgnoreEmpty -v $'^##' > ${ABRIDGED_ANNOTATION}.WARNINGS
 grepIgnoreEmpty $'^##' ${ABRIDGED_ANNOTATION}Pre  | sed 's/^##//' > "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES"
 
@@ -133,7 +132,7 @@ rm ${MERGED_DELEXTRACTINTERSECT}
 
 ${PYTHON_BINARY} ${TOOL_DEDUP_RESULTS_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED} ${tumorDefaultReadLength} > ${BEDPE_RESULT_FILE_FILTERED_DEDUP}
 
-if [[ -e "${bloodFile}" ]]
+if [[ -e "$bloodFile" ]]
 then
 	cat <(head -n 1 ${BEDPE_RESULT_FILE_FILTERED})  <(grepIgnoreEmpty GERMLINE ${BEDPE_RESULT_FILE_FILTERED}) | uniq > ${BEDPE_RESULT_FILE_FILTERED_GERMLINE}
 	grepIgnoreEmpty -v GERMLINE ${BEDPE_RESULT_FILE_FILTERED}  > ${BEDPE_RESULT_FILE_FILTERED_SOMATIC}
