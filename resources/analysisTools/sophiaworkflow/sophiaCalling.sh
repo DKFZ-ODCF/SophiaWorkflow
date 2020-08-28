@@ -36,3 +36,18 @@ BPS_OUT_TMP="$BPS_OUT.tmp.gz"
     | "$GZIP_BINARY" --best > "$BPS_OUT_TMP"
 
 mv "$BPS_OUT_TMP" "$BPS_OUT" || throw 100 "Could not move file: '$BPS_OUT_TMP'"
+
+outputSize=$(gunzip -c "$BPS_OUT" | head -n 10 | wc -l)
+if [[ $outputSize -eq 0 ]]; then
+    # The file should have a header.
+    echo "sophia binary may have failed. No output whatsoever" >> /dev/stderr
+    exit 10
+elif [[ $outputSize -eq 1 ]]; then
+    # The file must have a header.
+    # Empty output means, the data may have been of too low quality or depth.
+    # Instead of continuing and failing in a later job, rather fail here early with a dedicated exit code.
+    # BUT, OTP is not prepared to handle this condition, so for the time being return exit 0 and continue!
+    echo "sophia binary call yielded empty results set" >> /dev/stderr
+    exit 0
+fi
+
