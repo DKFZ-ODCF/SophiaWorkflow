@@ -90,14 +90,14 @@ ${BEDTOOLS_BINARY} closest -a ${FILE_DUM}rightCoords -b ${geneRefBedCancer} -g $
 ${BEDTOOLS_BINARY} closest -a ${FILE_DUM}rightCoords -b ${geneRefBed} -g ${chromSizesRef} -io -D ref -iu -t first -k 1 | cut -f 8,9 | sed 's/^\t/.\t/' > ${FILE_DUM}genesDownstream2
 ${BEDTOOLS_BINARY} closest -a ${FILE_DUM}rightCoords -b ${geneRefBedCancer} -g ${chromSizesRef} -io -D ref -iu -t first -k 1 | cut -f 8,9 | sed 's/^\t/.\t/' > ${FILE_DUM}genesDownstreamCancer2
 
-paste ${FILE_DUM}lineOrder <(cut -f1,2 ${FILE_DUM}directHits2) ${FILE_DUM}genesUpstream2 ${FILE_DUM}genesUpstreamCancer2 ${FILE_DUM}genesDownstream2 ${FILE_DUM}genesDownstreamCancer2 | sort -V -k1,1 | cut -f2- > ${FILE_DUM}right
+${PYTHON_BINARY} "$TOOL_SAFE_PASTE" ${FILE_DUM}lineOrder <(cut -f1,2 ${FILE_DUM}directHits2) ${FILE_DUM}genesUpstream2 ${FILE_DUM}genesUpstreamCancer2 ${FILE_DUM}genesDownstream2 ${FILE_DUM}genesDownstreamCancer2 | sort -V -k1,1 | cut -f2- > ${FILE_DUM}right
 cut -f3 ${FILE_DUM}directHits1 > ${FILE_DUM}leftSuperEnhancers
-paste ${FILE_DUM}lineOrder <(cut -f3 ${FILE_DUM}directHits2) | sort -V -k1,1 | cut -f2- > ${FILE_DUM}rightSuperEnhancers
-paste ${ABRIDGED_ANNOTATION} <(cut -f1,2 ${FILE_DUM}directHits1) ${FILE_DUM}genesUpstream1 ${FILE_DUM}genesUpstreamCancer1 ${FILE_DUM}genesDownstream1 ${FILE_DUM}genesDownstreamCancer1 ${FILE_DUM}right ${FILE_DUM}leftSuperEnhancers ${FILE_DUM}rightSuperEnhancers > ${FILE_DUM}tadPrep
+${PYTHON_BINARY} "$TOOL_SAFE_PASTE" ${FILE_DUM}lineOrder <(cut -f3 ${FILE_DUM}directHits2) | sort -V -k1,1 | cut -f2- > ${FILE_DUM}rightSuperEnhancers
+${PYTHON_BINARY} "$TOOL_SAFE_PASTE" ${ABRIDGED_ANNOTATION} <(cut -f1,2 ${FILE_DUM}directHits1) ${FILE_DUM}genesUpstream1 ${FILE_DUM}genesUpstreamCancer1 ${FILE_DUM}genesDownstream1 ${FILE_DUM}genesDownstreamCancer1 ${FILE_DUM}right ${FILE_DUM}leftSuperEnhancers ${FILE_DUM}rightSuperEnhancers > ${FILE_DUM}tadPrep
 
 ${PYTHON_BINARY} ${TOOL_INTRACHROMOSOMALEVENTPICKER} ${FILE_DUM}tadPrep | ${BEDTOOLS_BINARY} intersect -a stdin -b ${roadmapEnhancerRefBed} -u | cut -f 4 > ${FILE_DUM}tadWhitelist
 ${PYTHON_BINARY} ${TOOL_TADANNOTATION_SCRIPT} ${FILE_DUM}tadPrep ${FILE_DUM}tadWhitelist ${consensusTadReferenceBed} ${smallEventThreshold} > ${FILE_DUM}tadAnnotations
-paste ${FILE_DUM}tadPrep ${FILE_DUM}tadAnnotations ${ABRIDGED_ANNOTATION}_preRemapCoords > ${ABRIDGED_ANNOTATION_CONTEXT}
+${PYTHON_BINARY} "$TOOL_SAFE_PASTE" ${FILE_DUM}tadPrep ${FILE_DUM}tadAnnotations ${ABRIDGED_ANNOTATION}_preRemapCoords > ${ABRIDGED_ANNOTATION_CONTEXT}
 rm ${ABRIDGED_ANNOTATION}_preRemapCoords
 
 cat <(echo -e ${STANDARDHEADER})  <(cat ${ABRIDGED_ANNOTATION_CONTEXT}) | uniq | ${TOOL_FUSION_CANDIDATES_SCRIPT} > ${BEDPE_RESULT_FILE_FILTERED}
