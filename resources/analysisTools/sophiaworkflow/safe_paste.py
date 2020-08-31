@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2018 Umut H. Toprak, Matthias Schlesner, Roland Eils and DKFZ Heidelberg
+# Copyright (C) 2020 Philip R. Kensche, DKFZ Heidelberg
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -31,59 +31,44 @@ class InputError(Exception):
         self.message = message
 
 
-def assert_same_linenumber(chunks: list):
-    file_number = len(chunks)
+def assert_same_linenumber(data: list):
+    file_number = len(data)
     for file_i in range(file_number):
-        chunk = chunks[file_i]
-        if len(chunk) != len(chunks[0]):
-            raise InputError("Inconsistent number of lines: '{}' vs. '{}'".format(files[0], files[file_i]))
+        if len(data[file_i]) != len(data[0]):
+            raise InputError("Inconsistent number of lines: {} ({}) != {} ({})".
+                             format(len(files[0]), files[0],
+                                    len(files[file_i]), files[file_i]))
 
 
-def print_chunks(chunks: list, delimiter):
-    file_number = len(chunks)
-    chunk_size = len(chunks[0])
-    for line_offset in range(chunk_size):
+def print_data(all_data: list, delimiter):
+    file_number = len(all_data)
+    for line_i in range(len(all_data[0])):
         result_line = ""
         for file_i in range(file_number):
-            result_line += chunks[file_i][line_offset].rstrip()
+            result_line += all_data[file_i][line_i].rstrip()
             if file_i != file_number - 1:
                 result_line += delimiter
         print(result_line)
 
 
-def all_chunks_empty(chunks: list):
-    return all(list(map(lambda chunk: len(chunk) == 0, chunks)))
-
-
-def any_chunk_not_full(chunks: list, max_chunk_size):
-    return any(list(map(lambda chunk: len(chunks) < max_chunk_size, chunks)))
+def all_files_empty(all_data: list):
+    return all(list(map(lambda file_data: len(file_data) == 0, all_data)))
 
 
 files = sys.argv[1:len(sys.argv)]
+
+delimiter = "\t"
 
 try:
     if len(files) == 0:
         raise InputError("Empty argument list. Usage: 'safe_paste.py file {file}*")
 
-    max_chunk_size = 1000
-    delimiter = "\t"
+    file_handles = map(lambda f: open(f, "r"), files)
+    all_data = list(map(lambda fh: fh.readlines(), file_handles))
 
-    file_handles = list(map(lambda f: open(f, "r"), files))
-
-    while True:
-        chunks = list(map(lambda fh: fh.readlines(max_chunk_size), file_handles))
-
-        # For the special case that all files are empty.
-        if all_chunks_empty(chunks):
-            break
-
-        # Otherwise detect inconsistent line-numbers
-        assert_same_linenumber(chunks)
-        print_chunks(chunks, delimiter)
-
-        # Stop if the last chunk was read (they have all the same non-null lengths according to previous checks)
-        if any_chunk_not_full(chunks, max_chunk_size):
-            break
+    if not all_files_empty(all_data):
+        assert_same_linenumber(all_data)
+        print_data(all_data, delimiter)
 
 except InputError as e:
     print(e.message, file=sys.stderr)

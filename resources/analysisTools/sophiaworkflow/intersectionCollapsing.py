@@ -18,8 +18,6 @@
 #
 #
 # Aggregate all annotations for rows with the same ID column value (1-based: column 4).
-# Groups containing no information (no genes, cancer genes, or super-enhancers) are
-# *not* printed.
 #
 # Usage:
 #         intersectionCollapsing.py ${name}directHits[12]Pre
@@ -36,16 +34,11 @@ def set_join(the_set: set, sep=",", default="."):
         return default
 
 
-def print_line(gene_hit_string: str, cancer_hit_str: str, super_enhancer_hit_str: str):
-    """Print a line of information unless it is trivial/all '.'"""
-    if gene_hit_string != "." or cancer_hit_str != "." or super_enhancer_hit_str != ".":
-        print(gene_hit_string, cancer_hit_str, super_enhancer_hit_str, sep='\t')
-
-
 def print_hits(gene_hits: set, cancer_gene_hits: set, super_enhancer_hits: set):
-    print_line(set_join(gene_hits),
-               set_join(cancer_gene_hits),
-               set_join(super_enhancer_hits))
+    print(set_join(gene_hits),
+          set_join(cancer_gene_hits),
+          set_join(super_enhancer_hits),
+          sep='\t')
 
 
 inputFile = argv[1]
