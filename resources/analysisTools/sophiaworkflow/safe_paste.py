@@ -88,4 +88,3 @@ try:
 except InputError as e:
     print(e.message, file=sys.stderr)
     exit(1)
-

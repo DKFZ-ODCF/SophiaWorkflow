@@ -20,6 +20,16 @@ set -e -o pipefail -u
 
 BPS_OUT_TMP="$BPS_OUT.tmp.gz"
 
+ignoreEc() {
+  local observedCode="$?"
+  local ignorableErrorCode="${1:?No error code given}"
+  if [[ $observedCode -eq $ignorableErrorCode ]]; then
+    return 0
+  else
+    return $observedCode
+  fi
+}
+
 "$SAMTOOLS_BINARY" view -F 0x600 -f 0x001 "$BAMFILE" \
     | "$MBUFFER_BINARY" -q -m 2G -l /dev/null \
     | "$SOPHIA_BINARY" \
@@ -35,19 +45,22 @@ BPS_OUT_TMP="$BPS_OUT.tmp.gz"
         --bpsupport "$bpSupportThreshold" \
     | "$GZIP_BINARY" --best > "$BPS_OUT_TMP"
 
-mv "$BPS_OUT_TMP" "$BPS_OUT" || throw 100 "Could not move file: '$BPS_OUT_TMP'"
-
-outputSize=$(gunzip -c "$BPS_OUT" | head -n 10 | wc -l)
-if [[ $outputSize -eq 0 ]]; then
+# gunzip or zcat exit with code (141), because `head` closes the pipe.
+BROKEN_PIPE=141
+outputSize=$(gunzip -c "$BPS_OUT_TMP" | head -n 10 | wc -l || ignoreEc $BROKEN_PIPE)
+if [[ "$outputSize" -eq 0 ]]; then
     # The file should have a header.
-    echo "sophia binary may have failed. No output whatsoever" >> /dev/stderr
+    echo "Sophia binary may have failed. No output whatsoever" >> /dev/stderr
     exit 10
-elif [[ $outputSize -eq 1 ]]; then
+elif [[ "$outputSize" -eq 1 ]]; then
     # The file must have a header.
     # Empty output means, the data may have been of too low quality or depth.
     # Instead of continuing and failing in a later job, rather fail here early with a dedicated exit code.
     # BUT, OTP is not prepared to handle this condition, so for the time being return exit 0 and continue!
-    echo "sophia binary call yielded empty results set" >> /dev/stderr
+    echo "Sophia binary call yielded empty results set" >> /dev/stderr
+    mv "$BPS_OUT_TMP" "$BPS_OUT" || throw 100 "Could not move file: '$BPS_OUT_TMP'"
     exit 0
+else
+    mv "$BPS_OUT_TMP" "$BPS_OUT" || throw 100 "Could not move file: '$BPS_OUT_TMP'"
 fi
 
