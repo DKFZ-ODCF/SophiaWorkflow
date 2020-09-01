@@ -52,26 +52,21 @@ FILE_DUM=${tumorFileRaw}_dum
 
 if [[ ! -e "${bloodFile}" ]]
 then
-	${SOPHIA_ANNOTATION_BINARY} --tumorresults ${tumorFile} --mref ${mRef} --pidsinmref ${pidsInMref} --bpfreq ${bpFreq} --artifactlofreq ${artifactLoFreq} --artifacthifreq ${artifactHiFreq} --clonalitystrictlofreq ${clonalityStrictLoFreq} --clonalitylofreq ${clonalityLoFreq} --clonalityhifreq ${clonalityHiFreq} --germlineoffset ${germlineFuzziness} --defaultreadlengthtumor ${tumorDefaultReadLength} --germlinedblimit ${germlineDbLimit} > ${ABRIDGED_ANNOTATION}Pre
+	${SOPHIA_ANNOTATION_BINARY} --tumorresults ${tumorFile} --mref ${mRef} --pidsinmref ${pidsInMref} --bpfreq ${bpFreq} --artifactlofreq ${artifactLoFreq} --artifacthifreq ${artifactHiFreq} --clonalitystrictlofreq ${clonalityStrictLoFreq} --clonalitylofreq ${clonalityLoFreq} --clonalityhifreq ${clonalityHiFreq} --germlineoffset ${germlineFuzziness} --defaultreadlengthtumor ${tumorDefaultReadLength} --germlinedblimit ${germlineDbLimit} \
+	  > ${ABRIDGED_ANNOTATION}Pre
 else
-	${SOPHIA_ANNOTATION_BINARY} --tumorresults ${tumorFile} --mref ${mRef} --controlresults ${bloodFile} --pidsinmref ${pidsInMref} --bpfreq ${bpFreq} --artifactlofreq ${artifactLoFreq} --artifacthifreq ${artifactHiFreq} --clonalitystrictlofreq ${clonalityStrictLoFreq} --clonalitylofreq ${clonalityLoFreq} --clonalityhifreq ${clonalityHiFreq} --germlineoffset ${germlineFuzziness} --defaultreadlengthtumor ${tumorDefaultReadLength} --defaultreadlengthcontrol ${controlDefaultReadLength} --germlinedblimit ${germlineDbLimit} > ${ABRIDGED_ANNOTATION}Pre
+	${SOPHIA_ANNOTATION_BINARY} --tumorresults ${tumorFile} --mref ${mRef} --controlresults ${bloodFile} --pidsinmref ${pidsInMref} --bpfreq ${bpFreq} --artifactlofreq ${artifactLoFreq} --artifacthifreq ${artifactHiFreq} --clonalitystrictlofreq ${clonalityStrictLoFreq} --clonalitylofreq ${clonalityLoFreq} --clonalityhifreq ${clonalityHiFreq} --germlineoffset ${germlineFuzziness} --defaultreadlengthtumor ${tumorDefaultReadLength} --defaultreadlengthcontrol ${controlDefaultReadLength} --germlinedblimit ${germlineDbLimit} \
+	  > ${ABRIDGED_ANNOTATION}Pre
 fi
 
 grepIgnoreEmpty $'^#' ${ABRIDGED_ANNOTATION}Pre | grepIgnoreEmpty -v $'^##' > ${ABRIDGED_ANNOTATION}.WARNINGS
 grepIgnoreEmpty $'^##' ${ABRIDGED_ANNOTATION}Pre  | sed 's/^##//' > "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES"
-
-
 grepIgnoreEmpty -v $'^#' ${ABRIDGED_ANNOTATION}Pre | awk '($4 != "NA")' | awk '$10 > 0' | sort -V -k 1,1 -k2,2 -k4,4 -k5,5 > ${ABRIDGED_ANNOTATION}_preRemap
 
 
 ${PYTHON_BINARY} ${TOOL_DECOY_MAPPER_SCRIPT} ${decoyRangeRefBed} ${ABRIDGED_ANNOTATION}_preRemap | sort -V -k 1,1 -k2,2 -k4,4 -k5,5 > ${ABRIDGED_ANNOTATION}_tmp
 rev ${ABRIDGED_ANNOTATION}_tmp | cut -f 1-6 | rev > ${ABRIDGED_ANNOTATION}_preRemapCoords
 rev ${ABRIDGED_ANNOTATION}_tmp | cut -f 7- | rev > ${ABRIDGED_ANNOTATION}
-
-rm ${ABRIDGED_ANNOTATION}Pre
-rm ${ABRIDGED_ANNOTATION}_tmp
-rm ${ABRIDGED_ANNOTATION}_preRemap
-
 
 cut -f 1-3 ${ABRIDGED_ANNOTATION} | cat -n | sed 's/ //g' | awk -v OFS='\t'  '{print $2, $3, $4, $1}' > ${FILE_DUM}leftCoords
 ${BEDTOOLS_BINARY} intersect -a ${FILE_DUM}leftCoords -b ${intronExonRefBed} ${intronExonRefBedCancer} ${combinedSuperEnhancerRefBed} -loj  > ${FILE_DUM}directHits1Pre
@@ -98,21 +93,16 @@ ${PYTHON_BINARY} "$TOOL_SAFE_PASTE" ${ABRIDGED_ANNOTATION} <(cut -f1,2 ${FILE_DU
 ${PYTHON_BINARY} ${TOOL_INTRACHROMOSOMALEVENTPICKER} ${FILE_DUM}tadPrep | ${BEDTOOLS_BINARY} intersect -a stdin -b ${roadmapEnhancerRefBed} -u | cut -f 4 > ${FILE_DUM}tadWhitelist
 ${PYTHON_BINARY} ${TOOL_TADANNOTATION_SCRIPT} ${FILE_DUM}tadPrep ${FILE_DUM}tadWhitelist ${consensusTadReferenceBed} ${smallEventThreshold} > ${FILE_DUM}tadAnnotations
 ${PYTHON_BINARY} "$TOOL_SAFE_PASTE" ${FILE_DUM}tadPrep ${FILE_DUM}tadAnnotations ${ABRIDGED_ANNOTATION}_preRemapCoords > ${ABRIDGED_ANNOTATION_CONTEXT}
-rm ${ABRIDGED_ANNOTATION}_preRemapCoords
 
 cat <(echo -e ${STANDARDHEADER})  <(cat ${ABRIDGED_ANNOTATION_CONTEXT}) | uniq | ${TOOL_FUSION_CANDIDATES_SCRIPT} > ${BEDPE_RESULT_FILE_FILTERED}
 
-#DELETE TEMPORARY FILES
-rm ${ABRIDGED_ANNOTATION}
-rm ${ABRIDGED_ANNOTATION_CONTEXT}
-rm ${FILE_DUM}*
-#TEMPORARY FILES END
 
 #TEMPORARY FILES QC
 MERGED_DELEXTRACT=${BEDPE_RESULT_FILE_FILTERED}_delExtract
 MERGED_DELEXTRACTINTERSECT=${BEDPE_RESULT_FILE_FILTERED}_delExtractIntersect
 MERGED_RNACONTCANDIDATES_MORETHAN2INTRONS=${BEDPE_RESULT_FILE_FILTERED}_rnaContaminationCandidates
 #TEMPORARY FILES QC END
+
 ${PYTHON_BINARY} ${TOOL_RNACONT_DEL_EXTRACTOR_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED}  > ${MERGED_DELEXTRACT}
 ${BEDTOOLS_BINARY} intersect -a ${MERGED_DELEXTRACT} -b ${exonsOnlyPaddedRefBed} -wa -wb > ${MERGED_DELEXTRACTINTERSECT}
 ${PYTHON_BINARY} ${TOOL_RNACONT_DEL_COUNTER_SCRIPT} ${MERGED_DELEXTRACTINTERSECT} | grepIgnoreEmpty -v $'\t1$' >  ${MERGED_RNACONTCANDIDATES_MORETHAN2INTRONS}
@@ -125,10 +115,6 @@ then
 	rm ${BEDPE_RESULT_FILE_FILTERED}.contaminatedIndices
 	echo "#${MERGED_RNA_CONTAMINATED_GENES} are affected by RNA contamination, RNA decontamination applied, expect losses and false positives!" >> ${ABRIDGED_ANNOTATION}.WARNINGS
 fi
-#DELETE TEMPORARY FILES QC
-rm ${MERGED_DELEXTRACT}
-rm ${MERGED_DELEXTRACTINTERSECT}
-#TEMPORARY FILES QC END
 
 ${PYTHON_BINARY} ${TOOL_DEDUP_RESULTS_SCRIPT} ${BEDPE_RESULT_FILE_FILTERED} ${tumorDefaultReadLength} > ${BEDPE_RESULT_FILE_FILTERED_DEDUP}
 
@@ -148,20 +134,17 @@ then
 	set -e
 
 	mv "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_ACESEQ" "${BEDPE_RESULT_FILE_FILTERED_SOMATIC_ACESEQ/.tmp/}"
-    mv "$BEDPE_RESULT_FILE_FILTERED_SOMATIC" "${BEDPE_RESULT_FILE_FILTERED_SOMATIC/.tmp/}"
-    mv "$BEDPE_RESULT_FILE_FILTERED_DEDUP_SOMATIC" "${BEDPE_RESULT_FILE_FILTERED_DEDUP_SOMATIC/.tmp/}"
-    mv "$BEDPE_RESULT_FILE_FILTERED_GERMLINE" "${BEDPE_RESULT_FILE_FILTERED_GERMLINE/.tmp/}"
-    mv "$BEDPE_RESULT_FILE_FILTERED_DEDUP_GERMLINE" "${BEDPE_RESULT_FILE_FILTERED_DEDUP_GERMLINE/.tmp/}"
-    mv "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES" "${BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES/.tmp/}"
+  mv "$BEDPE_RESULT_FILE_FILTERED_SOMATIC" "${BEDPE_RESULT_FILE_FILTERED_SOMATIC/.tmp/}"
+  mv "$BEDPE_RESULT_FILE_FILTERED_DEDUP_SOMATIC" "${BEDPE_RESULT_FILE_FILTERED_DEDUP_SOMATIC/.tmp/}"
+  mv "$BEDPE_RESULT_FILE_FILTERED_GERMLINE" "${BEDPE_RESULT_FILE_FILTERED_GERMLINE/.tmp/}"
+  mv "$BEDPE_RESULT_FILE_FILTERED_DEDUP_GERMLINE" "${BEDPE_RESULT_FILE_FILTERED_DEDUP_GERMLINE/.tmp/}"
+  mv "$BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES" "${BEDPE_RESULT_FILE_FILTERED_SOMATIC_OVERHANG_CANDIDATES/.tmp/}"
 
-    pdfunite \
-	    "${BEDPE_RESULT_FILE_FILTERED_SOMATIC}_score_${circlizeScoreThreshold}_scaled.pdf" \
-	    "${BEDPE_RESULT_FILE_FILTERED_GERMLINE}_score_${circlizeScoreThreshold}_scaled.pdf" \
-	    "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf" \
-	    "${BEDPE_RESULT_FILE_FILTERED_PDF}"
-	rm "${BEDPE_RESULT_FILE_FILTERED_SOMATIC}_score_${circlizeScoreThreshold}_scaled.pdf"
-	rm "${BEDPE_RESULT_FILE_FILTERED_GERMLINE}_score_${circlizeScoreThreshold}_scaled.pdf"
-    rm "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf"
+  pdfunite \
+	  "${BEDPE_RESULT_FILE_FILTERED_SOMATIC}_score_${circlizeScoreThreshold}_scaled.pdf" \
+	  "${BEDPE_RESULT_FILE_FILTERED_GERMLINE}_score_${circlizeScoreThreshold}_scaled.pdf" \
+	  "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf" \
+	  "${BEDPE_RESULT_FILE_FILTERED_PDF}"
 
 else
 	awk '$10>2' ${BEDPE_RESULT_FILE_FILTERED} > ${BEDPE_RESULT_FILE_FILTERED_ACESEQ}
@@ -171,7 +154,7 @@ else
 	set -e
 
 	mv "$BEDPE_RESULT_FILE_FILTERED_ACESEQ" "${BEDPE_RESULT_FILE_FILTERED_ACESEQ/.tmp/}"
-    mv "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf" "$BEDPE_RESULT_FILE_FILTERED_PDF"
+  mv "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf" "$BEDPE_RESULT_FILE_FILTERED_PDF"
 fi
 
 mv "$BEDPE_RESULT_FILE_FILTERED" "${BEDPE_RESULT_FILE_FILTERED/.tmp/}"
@@ -218,6 +201,23 @@ mv "$QC_JSON_FILE" "${QC_JSON_FILE/.tmp/}"
 
 
 
+if [[ ! -v DEBUG_SOPHIA || ( $DEBUG_SOPHIA -ne 1 && $(echo "$DEBUG_SOPHIA" | tr a-z A-Z) != "TRUE" ) ]]; then
+  # Remove temporary files.
+  rm ${ABRIDGED_ANNOTATION}Pre
+  rm ${ABRIDGED_ANNOTATION}_tmp
+  rm ${ABRIDGED_ANNOTATION}_preRemap
+  rm ${ABRIDGED_ANNOTATION}
+  rm ${ABRIDGED_ANNOTATION}_preRemapCoords
+  rm ${ABRIDGED_ANNOTATION_CONTEXT}
+  rm ${FILE_DUM}*
 
-# Remove temporary files
-rm "${MERGED_RNACONTCANDIDATES_MORETHAN2INTRONS}"
+  # QC Files
+  rm -f "${BEDPE_RESULT_FILE_FILTERED_SOMATIC}_score_${circlizeScoreThreshold}_scaled.pdf"
+	rm -f "${BEDPE_RESULT_FILE_FILTERED_GERMLINE}_score_${circlizeScoreThreshold}_scaled.pdf"
+  rm -f "${BEDPE_RESULT_FILE_FILTERED}_score_${circlizeScoreThreshold}_scaled.pdf"
+
+  rm ${MERGED_DELEXTRACT}
+  rm ${MERGED_DELEXTRACTINTERSECT}
+
+  rm "${MERGED_RNACONTCANDIDATES_MORETHAN2INTRONS}"
+fi

@@ -24,6 +24,7 @@
                cleanupScript="cleanupScript">
 
     <configurationvalues>
+        <cvalue name="DEBUG_SOPHIA" value="FALSE" description="Keep tempfiles if TRUE"/>
 
         <!-- Sample-specific parameter values -->
         <cvalue name="tumorMedianIsize" value="" description="Median insert size."/>
