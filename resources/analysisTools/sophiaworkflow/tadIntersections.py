@@ -137,8 +137,8 @@ class BpDigitizer:
                                     windowOccupancy[i + j] = True
         indices = [self.lineIndices[bpChr][i] for i, x in enumerate(windowOccupancy) if x]
         indicesStr = "."
-        genes = "."
-        cancerGenes = "."
+        genesStr = "."
+        cancerGenesStr = "."
         if not (lowQual or (np.sum(windowOccupancy) < 2 and exclusionCandidacy)):
             if exclusionCandidacy and bpPos2 - bpPos1 < 1000 and smallBorderHit:
                 indicesStr = ','.join([x + "*" for x in indices])
@@ -149,12 +149,12 @@ class BpDigitizer:
         tmpGenes = set(chain(*[[y.split(';')[0] for y in self.genes[bpChr][i]] for i, x in enumerate(windowOccupancy) if x]))
         if len(tmpGenes) > 1 and "." in tmpGenes:
             tmpGenes.remove(".")
-        genes = ','.join(tmpGenes)
+        genesStr = ','.join(sorted(list(tmpGenes)))
         tmpCancerGenes = set(chain(*[[y.split(';')[0] for y in self.cancerGenes[bpChr][i]] for i, x in enumerate(windowOccupancy) if x]))
         if len(tmpCancerGenes) > 1 and "." in tmpCancerGenes:
             tmpCancerGenes.remove(".")
-        cancerGenes = ','.join(tmpCancerGenes)
-        return [indicesStr, genes, cancerGenes]
+        cancerGenesStr = ','.join(sorted(list(tmpCancerGenes)))
+        return [indicesStr, genesStr, cancerGenesStr]
 
     def processBp(self, bpChr, bpPos):
         windowOccupancy = ((bpPos >= self.windowStarts[bpChr]) & (bpPos <= self.windowEnds[bpChr]))
