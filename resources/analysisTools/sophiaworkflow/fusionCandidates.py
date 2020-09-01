@@ -16,6 +16,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+#
+# Add the columns "directFusionCandidates", "directFusionCandidatesBothCancer",
+# "indirectFusionCandidatesLeftCancerRightAny", "indirectFusionCandidatesRightCancerLeftAny",
+# and "indirectFusionCandidatesAny" to the input TSV.
+#
+# Note that some output fields only contain the first gene name from a list in one of the input colums. If these
+# input lists have quasi random order (e.g. being just the random-ordered fields of a dictionary) then these
+# columns may appear to contain unpredictable values -- in particular different values for different runs
+# of the workflow.
+#
 import fileinput
 import re
 import itertools
@@ -54,7 +64,7 @@ def getDirectFusion(gene1Raw, gene2Raw):
         if rawName1 == rawName2:
             fusionList.append(x)
         else:
-            fusionList.append([rawName1, rawName2])
+            fusionList.append((rawName1, rawName2))
     sortedFusions = set()
     filteredFusionList = list()
     fusionCandidates = list()
@@ -74,7 +84,7 @@ def getDirectFusion(gene1Raw, gene2Raw):
             if fusion[0] != fusion[1]:
                 fusionCandidates.append('-'.join(fusion))
         if len(fusionCandidates) > 0:
-            return ','.join(fusionCandidates)
+            return ','.join(sorted(fusionCandidates))
         else:
             return "."
     else:

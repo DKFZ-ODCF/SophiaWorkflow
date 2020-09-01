@@ -51,7 +51,7 @@ with open(preFilteredBedpe) as inputHandle:
         if line[0] != '#':
             lineIndex += 1
             skipLine = False
-            if lineIndex not in lineIndices:
+            if lineIndex not in sorted(list(lineIndices)):
                 lineChunks = line.rstrip().split('\t')
                 eventType = lineChunks[8]
                 eventScore = int(lineChunks[9])

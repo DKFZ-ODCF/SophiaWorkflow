@@ -17,19 +17,32 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 #
-# Aggregate all annotations for rows with the same ID column value (1-based: column 4).
+# Aggregate all annotations (genes, cancer genes, superenhancers) for rows with the same ID column value
+# (1-based: column 4). The input is the output from `bedtools intersect` in sophiaAnnotateAbridgedCaller.sh.
+#
+# Specifically, the following columns are used (as 1-based indices)
+#
+# 4 = ID
+# 5 = hit class, 1 = gene, 2 = cancer gene, 3 = superenhancers
+# 9 = annotation
+#
+# Lines (hits) with the same key are aggregated by combining into three sets the genes, cancer genes and superenhancers.
+# NOTE: Lines with the same ID value are **only** combined, if they occur in a continuous sequence. If they are
+# interrupted by lines with other ID values they are considered distinct, and result in distint output lines. There are
+# NO checks, whether IDs occur again after an interruption.
+#
+# For each (continuous sequence of an) ID, the three sets of genes, cancer genes and superenhancers are printed as one
+# TSV row with one column for each set.
 #
 # Usage:
 #         intersectionCollapsing.py ${name}directHits[12]Pre
 #
-# The input file comes from bedtools intersect. See sophiaAnnotateAbridgedCaller.sh for details..
-#
-from sys import argv
+from sys import argv, stderr
 
 
 def set_join(the_set: set, sep=",", default="."):
     if len(the_set) != 0:
-        return sep.join(the_set)
+        return sep.join(sorted(list(the_set)))
     else:
         return default
 
@@ -39,6 +52,11 @@ def print_hits(gene_hits: set, cancer_gene_hits: set, super_enhancer_hits: set):
           set_join(cancer_gene_hits),
           set_join(super_enhancer_hits),
           sep='\t')
+
+
+if len(argv) != 2:
+    print("Incorrect arguments. Usage: intersectionCollapsing.py ${name}directHits[12]Pre", file=stderr)
+    exit(1)
 
 
 inputFile = argv[1]

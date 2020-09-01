@@ -238,13 +238,13 @@ class BpDigitizer:
                     tmpGenes = set(chain(*res[1]))
                     if len(tmpGenes) > 1 and "." in tmpGenes:
                         tmpGenes.remove(".")
-                    genes = ','.join(tmpGenes)
+                    genes = ','.join(sorted(list(tmpGenes)))
                     if genes == "":
                         genes = "."
                     tmpCancerGenes = set(chain(*res[2]))
                     if len(tmpCancerGenes) > 1 and "." in tmpCancerGenes:
                         tmpCancerGenes.remove(".")
-                    cancerGenes = ','.join(tmpCancerGenes)
+                    cancerGenes = ','.join(sorted(list(tmpCancerGenes)))
                     if cancerGenes == "":
                         cancerGenes = "."
                     print("FALSE", indicesStr, genes, cancerGenes, sep='\t')
