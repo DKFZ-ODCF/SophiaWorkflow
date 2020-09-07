@@ -29,6 +29,7 @@
 import fileinput
 import re
 import itertools
+import sys
 
 MAXDISTANCE = 2000000
 
@@ -127,9 +128,9 @@ def extractIdListFromListOfIdSemicolonElems(string: str) -> str:
     return ','.join([elem.split(';')[0] for elem in string.split(',')])
 
 
-def distanceFilter(value: str, distance: int, max_distance: int = MAXDISTANCE) -> str:
+def distanceFilter(value: str, distanceStr: str, max_distance: int = MAXDISTANCE) -> str:
     if value not in {'', '.'}:
-        if distance > max_distance:
+        if int(distanceStr) > max_distance:
             return ""
         else:
             return value
@@ -137,135 +138,141 @@ def distanceFilter(value: str, distance: int, max_distance: int = MAXDISTANCE) -
         return ""
 
 
-for line in fileinput.input():
-    if line[0] == '#':
-        print(line.rstrip(), "directFusionCandidates", "directFusionCandidatesBothCancer",
-              "indirectFusionCandidatesLeftCancerRightAny",
-              "indirectFusionCandidatesRightCancerLeftAny", "indirectFusionCandidatesAny", sep='\t')
-    else:
-        directFusionCandidates = ""
-        directFusionCandidatesBothCancer = ""
-        indirectFusionCandidatesLeftCancerRightAny = ""
-        indirectFusionCandidatesRightCancerLeftAny = ""
-        indirectFusionCandidatesAny = ""
+line_no = 0
+try:
+    for line in fileinput.input():
+        line_no += 1
+        if line[0] == '#':
+            print(line.rstrip(), "directFusionCandidates", "directFusionCandidatesBothCancer",
+                  "indirectFusionCandidatesLeftCancerRightAny",
+                  "indirectFusionCandidatesRightCancerLeftAny", "indirectFusionCandidatesAny", sep='\t')
+        else:
+            directFusionCandidates = ""
+            directFusionCandidatesBothCancer = ""
+            indirectFusionCandidatesLeftCancerRightAny = ""
+            indirectFusionCandidatesRightCancerLeftAny = ""
+            indirectFusionCandidatesAny = ""
 
-        lineChunks = line.rstrip().split('\t')
+            lineChunks = line.rstrip().split('\t')
 
-        gene1Raw =                     extractIdListFromListOfIdSemicolonElems(lineChunks[20])
-        gene1RawCancer =               extractIdListFromListOfIdSemicolonElems(lineChunks[21])
-        gene1NearestUpstreamRaw =      distanceFilter(lineChunks[22],
-                                                      distance=int(lineChunks[23]))
-        gene1NearestUpstreamCancer =   distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[24]),
-                                                      distance=int(lineChunks[25]))
-        gene1NearestDownstreamRaw =    distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[26]),
-                                                      distance=int(lineChunks[27]))
-        gene1NearestDownstreamCancer = distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[28]),
-                                                      distance=int(lineChunks[29]))
+            gene1Raw =                     extractIdListFromListOfIdSemicolonElems(lineChunks[20])
+            gene1RawCancer =               extractIdListFromListOfIdSemicolonElems(lineChunks[21])
+            gene1NearestUpstreamRaw =      distanceFilter(lineChunks[22],
+                                                          distanceStr=lineChunks[23])
+            gene1NearestUpstreamCancer =   distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[24]),
+                                                          distanceStr=lineChunks[25])
+            gene1NearestDownstreamRaw =    distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[26]),
+                                                          distanceStr=lineChunks[27])
+            gene1NearestDownstreamCancer = distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[28]),
+                                                          distanceStr=lineChunks[29])
 
-        gene2Raw =                     extractIdListFromListOfIdSemicolonElems(lineChunks[30])
-        gene2RawCancer =               extractIdListFromListOfIdSemicolonElems(lineChunks[31])
-        gene2NearestUpstreamRaw =      distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[32]),
-                                                      distance=int(lineChunks[33]))
-        gene2NearestUpstreamCancer =   distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[34]),
-                                                      distance=int(lineChunks[35]))
-        gene2NearestDownstreamRaw =    distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[36]),
-                                                      distance=int(lineChunks[37]))
-        gene2NearestDownstreamCancer = distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[38]),
-                                                      distance=int(lineChunks[39]))
+            gene2Raw =                     extractIdListFromListOfIdSemicolonElems(lineChunks[30])
+            gene2RawCancer =               extractIdListFromListOfIdSemicolonElems(lineChunks[31])
+            gene2NearestUpstreamRaw =      distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[32]),
+                                                          distanceStr=lineChunks[33])
+            gene2NearestUpstreamCancer =   distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[34]),
+                                                          distanceStr=lineChunks[35])
+            gene2NearestDownstreamRaw =    distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[36]),
+                                                          distanceStr=lineChunks[37])
+            gene2NearestDownstreamCancer = distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[38]),
+                                                          distanceStr=lineChunks[39])
 
-        leftComponent = ""
-        if gene1RawCancer in {"", "."}:
-            if (gene1NearestDownstreamCancer not in {"", "."}) or (gene1NearestUpstreamCancer not in {"", "."}):
-                if gene1NearestUpstreamCancer not in {"", "."}:
-                    leftComponent += "~" + gene1NearestUpstreamCancer
-                leftComponent += "/"
-                if gene1NearestDownstreamCancer not in {"", "."}:
-                    leftComponent += "~" + gene1NearestDownstreamCancer
+            leftComponent = ""
+            if gene1RawCancer in {"", "."}:
+                if (gene1NearestDownstreamCancer not in {"", "."}) or (gene1NearestUpstreamCancer not in {"", "."}):
+                    if gene1NearestUpstreamCancer not in {"", "."}:
+                        leftComponent += "~" + gene1NearestUpstreamCancer
+                    leftComponent += "/"
+                    if gene1NearestDownstreamCancer not in {"", "."}:
+                        leftComponent += "~" + gene1NearestDownstreamCancer
+                else:
+                    leftComponent = "(TRUNC)"
             else:
-                leftComponent = "(TRUNC)"
-        else:
-            leftComponent = gene1RawCancer
+                leftComponent = gene1RawCancer
 
-        rightComponent = ""
-        if gene2Raw in {"", "."}:
-            if (gene2NearestUpstreamRaw not in {"", "."}) or (gene2NearestDownstreamRaw not in {"", "."}):
-                if gene2NearestUpstreamRaw not in {"", "."}:
-                    rightComponent += "~" + gene2NearestUpstreamRaw
-                rightComponent += "/"
-                if gene2NearestDownstreamRaw not in {"", "."}:
-                    rightComponent += "~" + gene2NearestDownstreamRaw
+            rightComponent = ""
+            if gene2Raw in {"", "."}:
+                if (gene2NearestUpstreamRaw not in {"", "."}) or (gene2NearestDownstreamRaw not in {"", "."}):
+                    if gene2NearestUpstreamRaw not in {"", "."}:
+                        rightComponent += "~" + gene2NearestUpstreamRaw
+                    rightComponent += "/"
+                    if gene2NearestDownstreamRaw not in {"", "."}:
+                        rightComponent += "~" + gene2NearestDownstreamRaw
+                else:
+                    rightComponent = "(TRUNC)"
             else:
-                rightComponent = "(TRUNC)"
-        else:
-            rightComponent = firstRawGeneName(gene2Raw)
-        if leftComponent != rightComponent:
-            indirectFusionCandidatesLeftCancerRightAny = leftComponent + "-" + rightComponent
-        else:
-            indirectFusionCandidatesLeftCancerRightAny = "."
-
-        leftComponent = ""
-        if gene1Raw in {"", "."}:
-            if (gene1NearestUpstreamRaw not in {"", "."}) or (gene1NearestDownstreamRaw not in {"", "."}):
-                if gene1NearestUpstreamRaw not in {"", "."}:
-                    leftComponent += "~" + gene1NearestUpstreamRaw
-                leftComponent += "/"
-                if gene1NearestDownstreamRaw not in {"", "."}:
-                    leftComponent += "~" + gene1NearestDownstreamRaw
+                rightComponent = firstRawGeneName(gene2Raw)
+            if leftComponent != rightComponent:
+                indirectFusionCandidatesLeftCancerRightAny = leftComponent + "-" + rightComponent
             else:
-                leftComponent = "(TRUNC)"
-        else:
-            leftComponent = firstRawGeneName(gene1Raw)
+                indirectFusionCandidatesLeftCancerRightAny = "."
 
-        rightComponent = ""
-        if gene2RawCancer in {"", "."}:
-            if (gene2NearestUpstreamCancer not in {"", "."}) or (gene2NearestDownstreamCancer not in {"", "."}):
-                if gene2NearestUpstreamCancer not in {"", "."}:
-                    rightComponent += "~" + gene2NearestUpstreamCancer
-                rightComponent += "/"
-                if gene2NearestDownstreamCancer not in {"", "."}:
-                    rightComponent += "~" + gene2NearestDownstreamCancer
+            leftComponent = ""
+            if gene1Raw in {"", "."}:
+                if (gene1NearestUpstreamRaw not in {"", "."}) or (gene1NearestDownstreamRaw not in {"", "."}):
+                    if gene1NearestUpstreamRaw not in {"", "."}:
+                        leftComponent += "~" + gene1NearestUpstreamRaw
+                    leftComponent += "/"
+                    if gene1NearestDownstreamRaw not in {"", "."}:
+                        leftComponent += "~" + gene1NearestDownstreamRaw
+                else:
+                    leftComponent = "(TRUNC)"
             else:
-                rightComponent = "(TRUNC)"
-        else:
-            rightComponent = gene2RawCancer
-        if leftComponent != rightComponent:
-            indirectFusionCandidatesRightCancerLeftAny = leftComponent + "-" + rightComponent
-        else:
-            indirectFusionCandidatesRightCancerLeftAny = "."
+                leftComponent = firstRawGeneName(gene1Raw)
 
-        leftComponent = ""
-        if gene1Raw in {"", "."}:
-            if (gene1NearestUpstreamRaw not in {"", "."}) or (gene1NearestDownstreamRaw not in {"", "."}):
-                if gene1NearestUpstreamRaw not in {"", "."}:
-                    leftComponent += "~" + gene1NearestUpstreamRaw
-                leftComponent += "/"
-                if gene1NearestDownstreamRaw not in {"", "."}:
-                    leftComponent += "~" + gene1NearestDownstreamRaw
+            rightComponent = ""
+            if gene2RawCancer in {"", "."}:
+                if (gene2NearestUpstreamCancer not in {"", "."}) or (gene2NearestDownstreamCancer not in {"", "."}):
+                    if gene2NearestUpstreamCancer not in {"", "."}:
+                        rightComponent += "~" + gene2NearestUpstreamCancer
+                    rightComponent += "/"
+                    if gene2NearestDownstreamCancer not in {"", "."}:
+                        rightComponent += "~" + gene2NearestDownstreamCancer
+                else:
+                    rightComponent = "(TRUNC)"
             else:
-                leftComponent = "(TRUNC)"
-        else:
-            leftComponent = firstRawGeneName(gene1Raw)
-        rightComponent = ""
-        if gene2Raw in {"", "."}:
-            if (gene2NearestUpstreamRaw not in {"", "."}) or (gene2NearestDownstreamRaw not in {"", "."}):
-                if gene2NearestUpstreamRaw not in {"", "."}:
-                    rightComponent += "~" + gene2NearestUpstreamRaw
-                rightComponent += "/"
-                if gene2NearestDownstreamRaw not in {"", "."}:
-                    rightComponent += "~" + gene2NearestDownstreamRaw
+                rightComponent = gene2RawCancer
+            if leftComponent != rightComponent:
+                indirectFusionCandidatesRightCancerLeftAny = leftComponent + "-" + rightComponent
             else:
-                rightComponent = "(TRUNC)"
-        else:
-            rightComponent = firstRawGeneName(gene2Raw)
-        if leftComponent != rightComponent:
-            indirectFusionCandidatesAny = leftComponent + "-" + rightComponent
-        else:
-            indirectFusionCandidatesAny = "."
+                indirectFusionCandidatesRightCancerLeftAny = "."
 
-        directFusionCandidates = getDirectFusionStr(gene1Raw, gene2Raw)
-        directFusionCandidatesBothCancer = getDirectFusionStr(gene1RawCancer, gene2RawCancer)
+            leftComponent = ""
+            if gene1Raw in {"", "."}:
+                if (gene1NearestUpstreamRaw not in {"", "."}) or (gene1NearestDownstreamRaw not in {"", "."}):
+                    if gene1NearestUpstreamRaw not in {"", "."}:
+                        leftComponent += "~" + gene1NearestUpstreamRaw
+                    leftComponent += "/"
+                    if gene1NearestDownstreamRaw not in {"", "."}:
+                        leftComponent += "~" + gene1NearestDownstreamRaw
+                else:
+                    leftComponent = "(TRUNC)"
+            else:
+                leftComponent = firstRawGeneName(gene1Raw)
+            rightComponent = ""
+            if gene2Raw in {"", "."}:
+                if (gene2NearestUpstreamRaw not in {"", "."}) or (gene2NearestDownstreamRaw not in {"", "."}):
+                    if gene2NearestUpstreamRaw not in {"", "."}:
+                        rightComponent += "~" + gene2NearestUpstreamRaw
+                    rightComponent += "/"
+                    if gene2NearestDownstreamRaw not in {"", "."}:
+                        rightComponent += "~" + gene2NearestDownstreamRaw
+                else:
+                    rightComponent = "(TRUNC)"
+            else:
+                rightComponent = firstRawGeneName(gene2Raw)
+            if leftComponent != rightComponent:
+                indirectFusionCandidatesAny = leftComponent + "-" + rightComponent
+            else:
+                indirectFusionCandidatesAny = "."
 
-        print(line.rstrip(),
-              directFusionCandidates, directFusionCandidatesBothCancer,
-              indirectFusionCandidatesLeftCancerRightAny, indirectFusionCandidatesRightCancerLeftAny,
-              indirectFusionCandidatesAny, sep='\t')
+            directFusionCandidates = getDirectFusionStr(gene1Raw, gene2Raw)
+            directFusionCandidatesBothCancer = getDirectFusionStr(gene1RawCancer, gene2RawCancer)
+
+            print(line.rstrip(),
+                  directFusionCandidates, directFusionCandidatesBothCancer,
+                  indirectFusionCandidatesLeftCancerRightAny, indirectFusionCandidatesRightCancerLeftAny,
+                  indirectFusionCandidatesAny, sep='\t')
+except Exception as e:
+    print("Error while processing line {}: {}".format(line_no, e), file=sys.stderr)
+    sys.exit(1)
