@@ -62,7 +62,7 @@ def getDirectFusion(gene1Raw, gene2Raw):
         rawName1 = rawGeneName(x[0])
         rawName2 = rawGeneName(x[1])
         if rawName1 == rawName2:
-            fusionList.append(x)
+            fusionList.append(list(x))
         else:
             fusionList.append((rawName1, rawName2))
     sortedFusions = set()
