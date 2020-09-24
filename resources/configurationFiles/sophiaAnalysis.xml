@@ -24,6 +24,7 @@
                cleanupScript="cleanupScript">
 
     <configurationvalues>
+        <cvalue name="DEBUG_SOPHIA" value="FALSE" description="Keep tempfiles if TRUE"/>
 
         <!-- Sample-specific parameter values -->
         <cvalue name="tumorMedianIsize" value="" description="Median insert size."/>
@@ -139,6 +140,7 @@
         <tool name='tadannotationScript' value='tadIntersections.py' basepath="sophiaworkflow" />
         <tool name='decoyMapperScript' value="decoyMapper.py" basepath="sophiaworkflow"/>
         <tool name='dedupResultsScript' value='dedupResults.py' basepath="sophiaworkflow"/>
+        <tool name='safePaste' value="safe_paste.py" basepath="sophiaworkflow"/>
         <!-- END NEW -->
 
         <tool name="circlizeScript" value="circlizeEvents.R" basepath="sophiaworkflow"/>

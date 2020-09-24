@@ -15,56 +15,84 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+#
+# Aggregate all annotations (genes, cancer genes, superenhancers) for rows with the same ID column value
+# (1-based: column 4). The input is the output from `bedtools intersect` in sophiaAnnotateAbridgedCaller.sh.
+#
+# Specifically, the following columns are used (as 1-based indices)
+#
+# 4 = ID
+# 5 = hit class, 1 = gene, 2 = cancer gene, 3 = superenhancers
+# 9 = annotation
+#
+# Lines (hits) with the same key are aggregated by combining into three sets the genes, cancer genes and superenhancers.
+# NOTE: Lines with the same ID value are **only** combined, if they occur in a continuous sequence. If they are
+# interrupted by lines with other ID values they are considered distinct, and result in distint output lines. There are
+# NO checks, whether IDs occur again after an interruption.
+#
+# For each (continuous sequence of an) ID, the three sets of genes, cancer genes and superenhancers are printed as one
+# TSV row with one column for each set.
+#
+# Usage:
+#         intersectionCollapsing.py ${name}directHits[12]Pre
+#
+from sys import argv, stderr
 
-from sys import argv
+
+def set_join(the_set: set, sep=",", default="."):
+    if len(the_set) != 0:
+        return sep.join(sorted(list(the_set)))
+    else:
+        return default
+
+
+def print_hits(gene_hits: set, cancer_gene_hits: set, super_enhancer_hits: set):
+    print(set_join(gene_hits),
+          set_join(cancer_gene_hits),
+          set_join(super_enhancer_hits),
+          sep='\t')
+
+
+if len(argv) != 2:
+    print("Incorrect arguments. Usage: intersectionCollapsing.py ${name}directHits[12]Pre", file=stderr)
+    exit(1)
+
 
 inputFile = argv[1]
-
-
-def print_line(hit_str, cancer_hit_str, super_enhancer_hit_str):
-    """Print a line of information unless it is trivial/all '.'"""
-    if hit_str != "." or cancer_hit_str != "." or super_enhancer_hit_str != ".":
-        print(hit_str, cancer_hit_str, super_enhancer_hit_str, sep='\t')
 
 
 lastID = ""
 geneHits = set()
 cancerGeneHits = set()
 superEnhancerHits = set()
+
 with open(inputFile) as f:
     for line in f:
         lineChunks = line.rstrip().split('\t')
         ID = lineChunks[3]
+
         if ID != lastID:
+
             if lastID != "":
-                hitStr = "."
-                cancerHitStr = "."
-                superEnhancerHitStr = "."
-                if len(geneHits) != 0:
-                    hitStr = ','.join(geneHits)
-                if len(cancerGeneHits) != 0:
-                    cancerHitStr = ','.join(cancerGeneHits)
-                if len(superEnhancerHits) != 0:
-                    superEnhancerHitStr = ','.join(superEnhancerHits)
-                print_line(hitStr, cancerHitStr, superEnhancerHits)
+                print_hits(geneHits, cancerGeneHits, superEnhancerHits)
+
             lastID = ID
             geneHits = set()
             cancerGeneHits = set()
             superEnhancerHits = set()
-        if lineChunks[4] != ".":
-            if lineChunks[4] == "1":
-                geneHits.add(lineChunks[8])
-            elif lineChunks[4] == "2":
-                cancerGeneHits.add(lineChunks[8])
-            elif lineChunks[4] == "3":
-                superEnhancerHits.add(lineChunks[8])
-    hitStr = "."
-    cancerHitStr = "."
-    superEnhancerHitStr = "."
-    if len(geneHits) != 0:
-        hitStr = ','.join(geneHits)
-    if len(cancerGeneHits) != 0:
-        cancerHitStr = ','.join(cancerGeneHits)
-    if len(superEnhancerHits) != 0:
-        superEnhancerHitStr = ','.join(superEnhancerHits)
-    print_line(hitStr, cancerHitStr, superEnhancerHitStr)
+
+        hitClass = lineChunks[4]
+        if hitClass != ".":
+            annotation = lineChunks[8]
+            if hitClass == "1":
+                geneHits.add(annotation)
+            elif hitClass == "2":
+                cancerGeneHits.add(annotation)
+            elif hitClass == "3":
+                superEnhancerHits.add(annotation)
+            else:
+                raise "Unknown hit class (.=unclassified, 1=gene, 2=cancerGene, 3=superEnhancer): '%'".\
+                    format(hitClass)
+
+    print_hits(geneHits, cancerGeneHits, superEnhancerHits)

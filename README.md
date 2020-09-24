@@ -76,9 +76,15 @@ With version 2, it is not possible anymore to provide the insert sizes via the `
 
 ## Change Log
 
-* 2.2.1
+* 2.2.2
 
-  * Bugfix: intersectionCollapsing.py produces empty output instead of dot-line on empty input. Avoid downsteam int-cast error
+  * Bugfix in `intersectionCollapsing.py`: Produced columns with `set()` output and lines were put out instead of withheld, resulting in alignment errors in subsequent unchecked paste commands. Bug was fixed, script refactored and Python 3 type hints employed (not enforced by Python, though).
+  * Added `safe_paste.py` to shield against similar bugs in the future
+  * Added basic check to shield against yet unfixed potential unnoticable IO-errors in sophia binary (see [Bitbucket PR](https://bitbucket.org/utoprak/sophia/pull-requests/2/safer-file-io/diff))
+
+* 2.2.1 (deprecated)
+
+  * Bugfix: `intersectionCollapsing.py` produces empty output instead of dot-line on empty input. Avoid downsteam int-cast error
 
 * 2.2.0
 
