@@ -97,6 +97,41 @@ The workflow produces the  following files:
 
 The `svs_*_filtered_*.tsv` files, except of the `*_overhangCandidates.tsv` have the same format with a very large number of columns listing genes and particularly known cancer-related genes close to structural variations.
 
+| Column | Description |
+|--------|-------------|
+| chrom{1,2} |  |
+| start{1,2} | |
+| end{1,2} | |
+| somaticity{1,2} | |
+| svtype | |
+| eventScore | |
+| eventSize | |
+| eventInversion | |
+| evidence{1,2} | |
+| clonalityRatio{1,2} | |
+| source{1,2} | |
+| overhang{1,2} | |
+| gene{1,2} | |
+| cancerGene{1,2} | |
+| nearestCodingGene{Upstream,Downstream}{1,2} | |
+| nearestCodingGene{Upstream,Downstream}Distance{1,2} | |
+| nearestCancerGene{Upstream,Downstream}{1,2} | |
+| nearestCancerGene{Upstream,Downstream}Distance{1,2} | |
+| dbSUPERenhancer{1,2} | |
+| rescuedEnhancerHitCandidate | |
+| TADindices | |
+| affectedGenesTADestimate | |
+| affectedCancerGenesTADestimate | |
+| chrom{1,2}PreDecoyRemap | |
+| start{1,2}PreDecoyRemap | |
+| end{1,2}PreDecoyRemap | |
+| directFusionCandidates | |
+| directFusionCandidatesBothCancer | |
+| indirectFusionCandidatesLeftCancerRightAny | |
+| indirectFusionCandidatesRightCancerLeftAny | |
+| indirectFusionCandidatesAny | |
+
+
 The script `fusionCandidates.py` generates some of the columns. Please refer to that script for the exact logic. The following only gives a rough description of what is happening there. In total there are 5 colums added, 2 for direct fusions and 3 for indirect fusions.
 
 The columns "directFusionCandidates" and "directFusionCandidatesBothCancer" are direct fusion candidates displayed in the format "leftComponent-rightComponent" with the candidates taken both from the `gene{1,2}Raw` or `gene{1,2}RawCancer` columns for the "directFusionCandidates" or "directFusionCandidatesBothCancer" columns, respectively. If one of the components has the value "" or "." in the gene column, the component is displayed as "(TRUNC)", if they are identical (both "(TRUNC)") then the value "." is given. 
@@ -110,12 +145,16 @@ the processed gene identifiers columns, results from <2.2.2 and >=2.2.2 cannot b
 
 ## Change Log
 
+* 2.2.3
+
+  * Added comparison script `compareSvsTSVs` for `svs*.tsv` files.
+  * Added basic check to shield against yet unfixed potential unnoticable IO-errors in sophia binary (see [Bitbucket PR](https://bitbucket.org/utoprak/sophia/pull-requests/2/safer-file-io/diff))
+  * Refactorings and documentation to improve code clarity
+
 * 2.2.2
 
   * Bugfix in `intersectionCollapsing.py`: Produced columns with `set()` output and lines were put out instead of withheld, resulting in alignment errors in subsequent unchecked paste commands. Bug was fixed, script refactored and Python 3 type hints employed (not enforced by Python, though).
   * Added `safe_paste.py` to shield against similar bugs in the future
-  * Added basic check to shield against yet unfixed potential unnoticable IO-errors in sophia binary (see [Bitbucket PR](https://bitbucket.org/utoprak/sophia/pull-requests/2/safer-file-io/diff))
-  * Added comparison script `compareSvsTsvs` for `svs*.tsv` files.
 
 * 2.2.1 (deprecated)
 

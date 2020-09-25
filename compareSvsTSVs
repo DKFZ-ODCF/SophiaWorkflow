@@ -1,0 +1,186 @@
+#!/usr/bin/env scala
+
+import java.nio.file.{Paths, Path}
+import java.io.{BufferedReader, InputStreamReader, FileInputStream}
+import scala.collection.immutable.TreeSet
+
+class Line(val fields: List[String]) {
+
+  def setFromAnyColumn(field: String): TreeSet[String] = {
+    TreeSet(field.split("[/-]").map(_.replaceAll("~", "").intern).filter { value => value != "." && value != "(TRUNC)"}: _*)
+  }
+
+  def listColumn(field: String): TreeSet[String] = {
+    TreeSet(fields(40).split(","): _*)
+  }
+
+  def rawGeneNames(field: String): TreeSet[String] = {
+    TreeSet(field.split(",").map { value => value.split(";")(0) }: _*)
+  }
+
+  def requireSameValue(idx: Int, a: String, b: String): Unit = {
+    require(a == b,
+      s"Inconsistent field $idx: $a != $b")
+  }
+
+  def requireConsistentSets(idx: Int, a: String, b: String): Unit = {
+    val aVal = listColumn(a)
+    val bVal = listColumn(b)
+    require(aVal == bVal,
+      List("Column $idx with inconsistent values:",
+        s"a-b=${aVal -- bVal}",
+        s"b-a=${bVal -- aVal}").mkString("\n\t"))
+  }
+
+  def requireConsistentNonRawGeneSets(idx: Int, a: String, b: String): Unit = {
+    val aVal = rawGeneNames(a)
+    val bVal = rawGeneNames(b)
+    require(aVal == bVal,
+      List(s"Column $idx with inconsistent values:",
+        s"a-b=${aVal -- bVal}",
+        s"b-a=${bVal -- aVal}").mkString("\n\t"))
+  }
+
+
+  val nonRawListValuedColumns = List(20, 21, 24, 26, 28, 30, 31, 32, 34, 36, 36)
+  val listValuedColumns = List(40, 41, 44, 45)
+  val complexValuedColumns = List(52, 53, 54, 55, 56)
+
+  val directFusionCandidates: TreeSet[String] = setFromAnyColumn(fields(52))
+  val directFusionCandidatesBothCancer: TreeSet[String] = setFromAnyColumn(fields(53))
+  val indirectFusionCandidatesLeftCancerRightAny: TreeSet[String] = setFromAnyColumn(fields(54))
+  val indirectFusionCandidatesRightCancerLeftAny: TreeSet[String] = setFromAnyColumn(fields(55))
+  val indirectFusionCandidatesAny: TreeSet[String] = setFromAnyColumn(fields(56))
+
+
+  def requireConsistencyWith(that: Line, pre222Version: Boolean = false): Unit = {
+    require(this.nCols == that.nCols, s"Differing numbers of fields in line a and b: ${this} != ${that}")
+
+    // Bulk-compare most colums (either String or value lists, maybe with raw gene name extraction).
+    Range(0, nCols).
+      filter(!pre222Version || !complexValuedColumns.contains(_)).
+      foreach { idx: Int =>
+        if (listValuedColumns.contains(idx)) {
+          requireConsistentSets(idx, this.fields(idx), that.fields(idx))
+        } else if (nonRawListValuedColumns.contains(idx)) {
+          requireConsistentNonRawGeneSets(idx, this.fields(idx), that.fields(idx))
+        } else if (complexValuedColumns.contains(idx)) {
+          throw new RuntimeException("oops")
+        } else {
+          requireSameValue(idx, this.fields(idx), that.fields(idx))
+        }
+      }
+  }
+
+  def nCols: Int = fields.size
+
+
+  override def toString: String = {
+    s"Line(fields = ${fields})"
+  }
+
+}
+object Line {
+
+  def parseLine(line: String): List[String] = {
+    line.trim.split("\t").toList
+  }
+
+  def fromString(line: String): Line = {
+    new Line(parseLine(line))
+  }
+
+} 
+
+
+def reader(path: Path): BufferedReader = {
+  new BufferedReader(new InputStreamReader(new FileInputStream(path.toFile)))
+}
+
+
+
+val filePattern: Pattern = /svs_([^-]+)-$([^_]+)_.+(?!overhangCandidates).tsv/
+
+def getSampleAndDataset(dir: Path): (String, String) = {
+  // matching files in directory
+}
+
+def getFilePairs(dirA: Path, dirB: path): List[(Path, Path)] = {
+  // find all matching files
+  // sort each individually and zip them afterwards together into pairs
+| `svs_*_filtered_somatic_minEventScore3.tsv` |  |
+| `svs_*_filtered_dedup_somatic.tsv` |  |
+| `svs_*_filtered.tsv` |  | 
+| `svs_*_filtered_germlineStrict.tsv` |  |
+| `svs_*_filtered_somatic.tsv` | |
+| `svs_*_filtered_dedup.tsv` | |
+| `svs_*_filtered_dedup_germlineStrict.tsv` | |
+
+}
+
+
+var pre222Version = false
+var dirA: Path = null
+var dirB: Path = null
+if (args.size === 3) {
+  if (args(0).toLower != "true") {
+    System.err.println("First of three arguments wasn't 'true'.\nUsage: compareSvsTsvs [true] dirA dirB")
+    System.exit(1)
+  }
+  pre222Version = true
+  dirA = Paths.get(args(1))
+  dirB = Paths.get(args(2))
+} else if (args.size == 2) {
+  dirA = Paths.get(args(1))
+  dirB = Paths.get(args(2))
+} else {
+   System.err.println("Incorrect number of arguments (args.size).\nUsage: compareSvsTsvs [true] dirA dirB")
+   System.exit(1)
+}
+
+System.out.println(s"Comparing directories ${dirA} and ${dirB} in ${if (pre222Version) { "<2.2.2" } else { ">=2.2.2" }} mode.")
+
+val filePairs: List[(Path, Path)] = getFilePairs(dirA, dirB)
+
+filePairs.foreach { case (fileA, fileB) =>
+  System.out.println(s"Comparing ...\n\t$fileA\n\t$fileB")
+
+  if (fileA == fileB) {
+    System.out.println(s"Self-comparison of file ${fileA} skipped")
+  } else {
+
+    var lineNo = 0
+    try {
+      val aStream: BufferedReader = reader(fileA)
+      val bStream: BufferedReader = reader(fileB)
+
+      if (aStream.ready && aStream.ready) {
+        lineNo += 1
+        val aHeader = aStream.readLine
+        val bHeader = bStream.readLine
+      } else {
+        System.err.println("Couldn't read from one of input files: ${fileA} or ${fileB}")
+        System.exit(3)
+      }
+      while (aStream.ready && bStream.ready) {
+        lineNo += 1
+        val lA = aStream.readLine
+        val lB = bStream.readLine
+        val lineA = Line.fromString(lA)
+        val lineB = Line.fromString(lB)
+
+        lineA.requireConsistencyWith(lineB, pre222Version)
+
+        if ((aStream.ready && !bStream.ready) || (!aStream.ready && bStream.ready)) {
+          throw new AssertionError("Differing numbers of lines. More than ${lineNo} lines in one file.")
+        }
+      }
+
+    } catch {
+      case e: Throwable => {
+        System.err.println(s"line $lineNo: ${e.toString}")
+        System.exit(2)
+      }
+    }
+  }
+}
