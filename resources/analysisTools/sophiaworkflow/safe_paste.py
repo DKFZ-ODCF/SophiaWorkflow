@@ -17,6 +17,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Similar to coreutils' `paste` but checks that all files indeed have the same number of lines.
+# Like coreutils' paste, safe_paste.py has no idea of columns, which means if you paste columnar
+# data, no checks are being done of the correct number of columns for each line.
 #
 # Usage:
 #
@@ -36,8 +38,8 @@ def assert_same_linenumber(data: list):
     for file_i in range(file_number):
         if len(data[file_i]) != len(data[0]):
             raise InputError("Inconsistent number of lines: {} ({}) != {} ({})".
-                             format(len(files[0]), files[0],
-                                    len(files[file_i]), files[file_i]))
+                             format(len(data[0]),      files[0],
+                                    len(data[file_i]), files[file_i]))
 
 
 def print_data(all_data: list, delimiter):
@@ -69,6 +71,9 @@ try:
     if not all_files_empty(all_data):
         assert_same_linenumber(all_data)
         print_data(all_data, delimiter)
+        print("Pasted {} files with {} lines each.".format(len(files), len(all_data[0])), file=sys.stderr)
+    else:
+        print("Nothing to paste -- all files were empty!", file=sys.stderr)
 
 except InputError as e:
     print(e.message, file=sys.stderr)

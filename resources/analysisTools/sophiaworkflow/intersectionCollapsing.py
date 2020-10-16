@@ -68,7 +68,9 @@ cancerGeneHits = set()
 superEnhancerHits = set()
 
 with open(inputFile) as f:
+    lineCount = 0
     for line in f:
+        lineCount += 1
         lineChunks = line.rstrip().split('\t')
         ID = lineChunks[3]
 
@@ -94,5 +96,5 @@ with open(inputFile) as f:
             else:
                 raise "Unknown hit class (.=unclassified, 1=gene, 2=cancerGene, 3=superEnhancer): '%'".\
                     format(hitClass)
-
-    print_hits(geneHits, cancerGeneHits, superEnhancerHits)
+    if lineCount > 0:
+        print_hits(geneHits, cancerGeneHits, superEnhancerHits)
