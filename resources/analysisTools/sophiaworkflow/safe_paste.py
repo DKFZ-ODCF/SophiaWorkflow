@@ -68,12 +68,13 @@ try:
     file_handles = map(lambda f: open(f, "r"), files)
     all_data = list(map(lambda fh: fh.readlines(), file_handles))
 
-    if not all_files_empty(all_data):
+    if all_files_empty(all_data):
+        print("Nothing to paste -- all files were empty!", file=sys.stderr)
+    else:
         assert_same_linenumber(all_data)
         print_data(all_data, delimiter)
         print("Pasted {} files with {} lines each.".format(len(files), len(all_data[0])), file=sys.stderr)
-    else:
-        print("Nothing to paste -- all files were empty!", file=sys.stderr)
+
 
 except InputError as e:
     print(e.message, file=sys.stderr)
