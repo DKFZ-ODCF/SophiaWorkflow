@@ -135,15 +135,10 @@ class Line(val fields: List[String]) {
   }
 
 
-  def requireConsistencyWith(that: Line, versionSet: VersionSet = LT_2_2_2_Version): Unit = {
+  def requireConsistencyWith(that: Line): Unit = {
     require(this.nCols == columnToIndex.size, s"Unexpected number of columns (${this.nCols} != ${columnToIndex.size}) in ${this}")
     require(that.nCols == columnToIndex.size, s"Unexpected number of columns (${that.nCols} != ${columnToIndex.size}) in ${that}")
-    /* "fusionExpressionColumns" consist of parsable fusion expressions that select some gene name from one of the other columns
-       *and* transform this gene to a "raw" gene name. These columns are ignored (for now) because testing them on the
-       unpredictable input in this script would mean reimplementing the feature already implemented in the actual Python script.
-     */
     Range(0, nCols).
-      filter(!fusionExpressionColumnIndices.contains(_)).
       foreach { idx: Int =>
         if (listValuedColumnIndices.contains(idx)) {
           requireConsistentSets(idx, this.fields(idx), that.fields(idx))
@@ -152,10 +147,10 @@ class Line(val fields: List[String]) {
           requireConsistentNonRawGeneSets(idx, this.fields(idx), that.fields(idx))
 
         } else if (fusionExpressionColumnIndices.contains(idx)) {
-          // For now the fusion-expression-valued columns of fusion pairs are ignored. Testing them like here
-          // (with much less control over the input than in a unit-test) would mean re-implementing the
-          // feature (gene-name extraction).
-          throw new NotImplementedError()
+          /* "fusionExpressionColumns" consist of parsable fusion expressions that select some gene name from one of the other columns
+           *and* transform this gene to a "raw" gene name. These columns are ignored (for now) because testing them on the
+           unpredictable input in this script would mean reimplementing the feature already implemented in the actual Python script.
+           */
 
         } else {
           requireSameValue(idx, this.fields(idx), that.fields(idx))
@@ -189,21 +184,6 @@ object Line {
 
 def reader(path: Path): BufferedReader = {
   new BufferedReader(new InputStreamReader(new FileInputStream(path.toFile)))
-}
-
-
-
-sealed trait VersionSet {
-  def toVersion(): String
-  override def toString(): String = toVersion()
-}
-
-object LT_2_2_2_Version extends VersionSet {
-  override def toVersion(): String = "<2.2.2"
-}
-
-object GE_2_2_2_Version extends VersionSet {
-  override def toVersion(): String = ">=2.2.2"
 }
 
 
@@ -261,38 +241,24 @@ def getFilePairs(dirA: Path, dirB: Path): Map[Path, (Path, Path)] = {
   fullOuterJoin(filesA, filesB, null, null)((_,_))
 }
 
-
-var versionSet: VersionSet = null
 var pid: String = null 
 var tumorName: String = null
 var controlName: String = null
 var dirA: Path = null
 var dirB: Path = null
 
-if (args.size == 6) {
-  if (args(0).toLowerCase != "pre2.2.2") {
-    System.err.println("First of three arguments wasn't 'pre2.2.2'.\nUsage: compareSVsTSVs [pre2.2.2] pid tumorName controlName dirA dirB")
-    System.exit(1)
-  }
-  versionSet = LT_2_2_2_Version
-  pid = args(1)
-  tumorName = args(2)
-  controlName = args(3)
-  dirA = Paths.get(args(4))
-  dirB = Paths.get(args(5))
-} else if (args.size == 5) {
-  versionSet = GE_2_2_2_Version
+if (args.size == 5) {
   pid = args(0)
   tumorName = args(1)
   controlName = args(2)
   dirA = Paths.get(args(3))
   dirB = Paths.get(args(4))
 } else {
-   System.err.println("Incorrect number of arguments (args.size).\nUsage: compareSVsTSVs [pre2.2.2] pid tumorName controlName dirA dirB")
+   System.err.println("Incorrect number of arguments (args.size).\nUsage: compareSVsTSVs pid tumorName controlName dirA dirB")
    System.exit(1)
 }
 
-System.out.println(s"Comparing directories ${dirA} and ${dirB} in ${versionSet} mode.")
+System.out.println(s"Comparing directories ${dirA} and ${dirB}.")
 
 
 val filePairs: Map[Path, (Path, Path)] = getFilePairs(dirA, dirB).filterKeys(isComparableFile(pid, tumorName, controlName))
@@ -327,7 +293,7 @@ filePairs.foreach { case (baseName, (fileA, fileB)) =>
         val lineA = Line.fromString(lA)
         val lineB = Line.fromString(lB)
 
-        lineA.requireConsistencyWith(lineB, versionSet)
+        lineA.requireConsistencyWith(lineB)
 
         if ((aStream.ready && !bStream.ready) || (!aStream.ready && bStream.ready)) {
           throw new AssertionError("Differing numbers of lines. More than ${lineNo} lines in one file.")
