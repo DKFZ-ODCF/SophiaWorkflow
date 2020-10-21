@@ -1,0 +1,343 @@
+#!/usr/bin/env scala
+// sdk install scala 2.12.12 # or higher scala 2 version
+
+import java.nio.file.{Paths, Path, Files}
+import java.io.{BufferedReader, InputStreamReader, FileInputStream}
+import scala.collection.immutable.TreeSet
+import collection.JavaConverters._
+import scala.util.matching.Regex
+import scala.language.implicitConversions
+import scala.NotImplementedError
+
+class Line(val fields: List[String]) {
+
+  val columnToIndex: Map[String, Int] =
+    List(
+      "#chrom1",
+      "start1",
+      "end1",
+      "chrom2",
+      "start2",
+      "end2",
+      "somaticity1",
+      "somaticity2",
+      "svtype",
+      "eventScore",
+      "eventSize",
+      "eventInversion",
+      "evidence1",
+      "clonalityRatio1",
+      "evidence2",
+      "clonalityRatio2",
+      "source1",
+      "source2",
+      "overhang1",
+      "overhang2",
+      "gene1",
+      "cancerGene1",
+      "nearestCodingGeneUpstream1",
+      "nearestCodingGeneUpstreamDistance1",
+      "nearestCancerGeneUpstream1",
+      "nearestCancerGeneUpstreamDistance1",
+      "nearestCodingGeneDownstream1",
+      "nearestCodingGeneDownstreamDistance1",
+      "nearestCancerGeneDownstream1",
+      "nearestCancerGeneDownstreamDistance1",
+      "gene2",
+      "cancerGene2",
+      "nearestCodingGeneUpstream2",
+      "nearestCodingGeneUpstreamDistance2",
+      "nearestCancerGeneUpstream2",
+      "nearestCancerGeneUpstreamDistance2",
+      "nearestCodingGeneDownstream2",
+      "nearestCodingGeneDownstreamDistance2",
+      "nearestCancerGeneDownstream2",
+      "nearestCancerGeneDownstreamDistance2",
+      "dbSUPERenhancer1",
+      "dbSUPERenhancer2",
+      "rescuedEnhancerHitCandidate",
+      "TADindices",
+      "affectedGenesTADestimate",
+      "affectedCancerGenesTADestimate",
+      "chrom1PreDecoyRemap",
+      "start1PreDecoyRemap",
+      "end1PreDecoyRemap",
+      "chrom2PreDecoyRemap",
+      "start2PreDecoyRemap",
+      "end2PreDecoyRemap",
+      "directFusionCandidates",
+      "directFusionCandidatesBothCancer",
+      "indirectFusionCandidatesLeftCancerRightAny",
+      "indirectFusionCandidatesRightCancerLeftAny",
+      "indirectFusionCandidatesAny").zipWithIndex.toMap
+
+  val nonRawListValuedColumnIndices = List(
+    "gene1", "cancerGene1", "nearestCancerGeneUpstream1", "nearestCodingGeneDownstream1", "nearestCancerGeneDownstream1",
+    "gene2", "cancerGene2", "nearestCodingGeneUpstream2", "nearestCancerGeneUpstream2", "nearestCodingGeneDownstream2").
+    map(columnToIndex)
+  val listValuedColumnIndices = List(
+    "dbSUPERenhancer1", "dbSUPERenhancer2", "affectedGenesTADestimate", "affectedCancerGenesTADestimate").
+    map(columnToIndex)
+  val fusionExpressionColumnIndices =  List(
+    "directFusionCandidates", "directFusionCandidatesBothCancer", "indirectFusionCandidatesLeftCancerRightAny",
+    "indirectFusionCandidatesRightCancerLeftAny", "indirectFusionCandidatesAny").
+    map(columnToIndex)
+
+  val directFusionCandidates: TreeSet[String] =
+    setFromAnyColumn(fields(columnToIndex("directFusionCandidates")))
+  val directFusionCandidatesBothCancer: TreeSet[String] =
+    setFromAnyColumn(fields(columnToIndex("directFusionCandidatesBothCancer")))
+  val indirectFusionCandidatesLeftCancerRightAny: TreeSet[String] =
+    setFromAnyColumn(fields(columnToIndex("indirectFusionCandidatesLeftCancerRightAny")))
+  val indirectFusionCandidatesRightCancerLeftAny: TreeSet[String] =
+    setFromAnyColumn(fields(columnToIndex("indirectFusionCandidatesRightCancerLeftAny")))
+  val indirectFusionCandidatesAny: TreeSet[String] =
+    setFromAnyColumn(fields(columnToIndex("indirectFusionCandidatesAny")))
+
+
+  def setFromAnyColumn(field: String): TreeSet[String] = {
+    TreeSet(field.
+      split("[/-]").
+      map(_.replaceAll("~", "").intern).
+      filter { value => value != "." && value != "(TRUNC)"} : _*)
+  }
+
+  def listColumn(field: String): TreeSet[String] = {
+    TreeSet(fields(40).split(",") : _*)
+  }
+
+  def rawGeneNames(field: String): TreeSet[String] = {
+    TreeSet(field.
+      split(",").
+      map { value => value.split(";")(0) } : _*)
+  }
+
+  def requireSameValue(idx: Int, a: String, b: String): Unit = {
+    require(a == b, s"Inconsistent field $idx: $a != $b")
+  }
+
+  def requireConsistentSets(idx: Int, a: String, b: String): Unit = {
+    val aVal = listColumn(a)
+    val bVal = listColumn(b)
+    require(aVal == bVal,
+      List("Column $idx with inconsistent values:",
+        s"a-b=${aVal -- bVal}",
+        s"b-a=${bVal -- aVal}").mkString("\n\t"))
+  }
+
+  def requireConsistentNonRawGeneSets(idx: Int, a: String, b: String): Unit = {
+    val aVal = rawGeneNames(a)
+    val bVal = rawGeneNames(b)
+    require(aVal == bVal,
+      List(s"Column $idx with inconsistent values:",
+        s"a-b=${aVal -- bVal}",
+        s"b-a=${bVal -- aVal}").mkString("\n\t"))
+  }
+
+
+  def requireConsistencyWith(that: Line, versionSet: VersionSet = LT_2_2_2_Version): Unit = {
+    require(this.nCols == columnToIndex.size, s"Unexpected number of columns (${this.nCols} != ${columnToIndex.size}) in ${this}")
+    require(that.nCols == columnToIndex.size, s"Unexpected number of columns (${that.nCols} != ${columnToIndex.size}) in ${that}")
+    /* "fusionExpressionColumns" consist of parsable fusion expressions that select some gene name from one of the other columns
+       *and* transform this gene to a "raw" gene name. These columns are ignored (for now) because testing them on the
+       unpredictable input in this script would mean reimplementing the feature already implemented in the actual Python script.
+     */
+    Range(0, nCols).
+      filter(!fusionExpressionColumnIndices.contains(_)).
+      foreach { idx: Int =>
+        if (listValuedColumnIndices.contains(idx)) {
+          requireConsistentSets(idx, this.fields(idx), that.fields(idx))
+
+        } else if (nonRawListValuedColumnIndices.contains(idx)) {
+          requireConsistentNonRawGeneSets(idx, this.fields(idx), that.fields(idx))
+
+        } else if (fusionExpressionColumnIndices.contains(idx)) {
+          // For now the fusion-expression-valued columns of fusion pairs are ignored. Testing them like here
+          // (with much less control over the input than in a unit-test) would mean re-implementing the
+          // feature (gene-name extraction).
+          throw new NotImplementedError()
+
+        } else {
+          requireSameValue(idx, this.fields(idx), that.fields(idx))
+        }
+      }
+  }
+
+  def nCols: Int = fields.size
+
+
+  override def toString: String = {
+    s"Line(fields = ${fields})"
+  }
+
+}
+
+
+object Line {
+
+  def parseLine(line: String): List[String] = {
+    line.trim.split("\t").toList
+  }
+
+  def fromString(line: String): Line = {
+    new Line(parseLine(line))
+  }
+
+} 
+
+
+
+def reader(path: Path): BufferedReader = {
+  new BufferedReader(new InputStreamReader(new FileInputStream(path.toFile)))
+}
+
+
+
+sealed trait VersionSet {
+  def toVersion(): String
+  override def toString(): String = toVersion()
+}
+
+object LT_2_2_2_Version extends VersionSet {
+  override def toVersion(): String = "<2.2.2"
+}
+
+object GE_2_2_2_Version extends VersionSet {
+  override def toVersion(): String = ">=2.2.2"
+}
+
+
+case class SVFileType(pid: String, tumor: String, control: String) extends Enumeration {
+
+  protected case class Val(regex: Regex) extends super.Val {}
+  implicit def valueToVal(x: Value): Val = x.asInstanceOf[Val]
+
+  val SomaticMinEventScore = Val(s"svs_${pid}_minEventScore3.tsv".r)
+  val DedupSomatic = Val(s"svs_${pid}_$tumor-${control}_filtered_dedup_somatic.tsv".r)
+  val Plain = Val(s"svs_${pid}_$tumor-${control}_filtered.tsv".r)
+  val GermlineStrict = Val(s"svs_${pid}_$tumor-${control}_filtered_germlineStrict.tsv".r)
+  val Somatic = Val(s"svs_${pid}_$tumor-${control}_filtered_somatic.tsv".r)
+  val Dedup = Val(s"svs_${pid}_$tumor-${control}_filtered_dedup.tsv".r) 
+  val DedupGermlineStrict = Val(s"svs_${pid}_$tumor-${control}_filtered_dedup_germlineStrict.tsv".r)
+
+  def apply(path: Path): Option[Value] = Option(path.getFileName.toString match {
+    case SomaticMinEventScore.regex(_*) => SomaticMinEventScore
+    case DedupSomatic.regex(_*) => DedupSomatic
+    case Plain.regex(_*) => Plain
+    case GermlineStrict.regex(_*) => GermlineStrict
+    case Somatic.regex(_*) => Somatic
+    case Dedup.regex(_*) => Dedup
+    case DedupGermlineStrict.regex(_*) => DedupGermlineStrict
+    case _ => null
+  })
+}
+
+
+def isComparableFile(pid: String, tumorName: String, controlName: String)(path: Path): Boolean =
+  SVFileType(pid, tumorName, controlName)(path).nonEmpty
+
+
+def listFilesInDir(dir: Path): Iterator[Path] =
+  Files.list(dir).iterator().asScala
+
+
+def fullOuterJoin[A,B,C](a : Map[A,B], b : Map[A,B], aDefault: => B, bDefault: => B)(c : (B,B) => C) =
+  (a.keySet ++ b.keySet).map { k =>
+    k -> c(a.getOrElse(k, aDefault),
+      b.getOrElse(k, bDefault))
+  }.toMap
+
+
+def getFilePairs(dirA: Path, dirB: Path): Map[Path, (Path, Path)] = {
+  if (dirA == dirB)
+    System.err.println(s"Self-comparing '$dirA'")
+  val filesA = listFilesInDir(dirA).map { path: Path => 
+    dirA.relativize(path) -> path
+  }.toMap
+  val filesB = listFilesInDir(dirB).map { path: Path =>
+    dirB.relativize(path) -> path
+  }.toMap
+
+  fullOuterJoin(filesA, filesB, null, null)((_,_))
+}
+
+
+var versionSet: VersionSet = null
+var pid: String = null 
+var tumorName: String = null
+var controlName: String = null
+var dirA: Path = null
+var dirB: Path = null
+
+if (args.size == 6) {
+  if (args(0).toLowerCase != "pre2.2.2") {
+    System.err.println("First of three arguments wasn't 'pre2.2.2'.\nUsage: compareSVsTSVs [pre2.2.2] pid tumorName controlName dirA dirB")
+    System.exit(1)
+  }
+  versionSet = LT_2_2_2_Version
+  pid = args(1)
+  tumorName = args(2)
+  controlName = args(3)
+  dirA = Paths.get(args(4))
+  dirB = Paths.get(args(5))
+} else if (args.size == 5) {
+  versionSet = GE_2_2_2_Version
+  pid = args(0)
+  tumorName = args(1)
+  controlName = args(2)
+  dirA = Paths.get(args(3))
+  dirB = Paths.get(args(4))
+} else {
+   System.err.println("Incorrect number of arguments (args.size).\nUsage: compareSVsTSVs [pre2.2.2] pid tumorName controlName dirA dirB")
+   System.exit(1)
+}
+
+System.out.println(s"Comparing directories ${dirA} and ${dirB} in ${versionSet} mode.")
+
+
+val filePairs: Map[Path, (Path, Path)] = getFilePairs(dirA, dirB).filterKeys(isComparableFile(pid, tumorName, controlName))
+
+filePairs.foreach { case (baseName, (fileA, fileB)) =>
+  System.out.println(s"Comparing $baseName ...\n\t$fileA\n\t$fileB")
+
+  var lineNo = 0
+  try {
+    if (null == fileA) {
+      throw new AssertionError(s"No corresponding file for '$baseName' in directory '$dirA'")
+    } else if (null == fileB) {
+      throw new AssertionError(s"No corresponding file for '$baseName' in directory '$dirB'")
+    } else if (fileA == fileB) {
+      System.out.println(s"Self-comparison of file ${fileA} skipped")
+    } else {
+      val aStream: BufferedReader = reader(fileA)
+      val bStream: BufferedReader = reader(fileB)
+
+      if (aStream.ready && aStream.ready) {
+        lineNo += 1
+        val aHeader = aStream.readLine
+        val bHeader = bStream.readLine
+      } else {
+        System.err.println("Couldn't read from one of input files: ${fileA} or ${fileB}")
+        System.exit(3)
+      }
+      while (aStream.ready && bStream.ready) {
+        lineNo += 1
+        val lA = aStream.readLine
+        val lB = bStream.readLine
+        val lineA = Line.fromString(lA)
+        val lineB = Line.fromString(lB)
+
+        lineA.requireConsistencyWith(lineB, versionSet)
+
+        if ((aStream.ready && !bStream.ready) || (!aStream.ready && bStream.ready)) {
+          throw new AssertionError("Differing numbers of lines. More than ${lineNo} lines in one file.")
+        }
+      }
+    }
+  } catch {
+    case e: Throwable => {
+      System.err.println(s"line $lineNo: ${e.toString}")
+      System.exit(2)
+    }
+  }
+}

@@ -24,5 +24,6 @@
     <orderEntry type="module" module-name="RoddyToolLib.main" />
     <orderEntry type="module" module-name="DefaultPlugin_1.2.2" />
     <orderEntry type="module" module-name="PluginBase_1.2.1" />
+    <orderEntry type="library" name="scala-sdk-2.13.3" level="application" />
   </component>
 </module>
