@@ -29,18 +29,26 @@
 import fileinput
 import re
 import itertools
-from sys import stderr
+import sys
+
 
 MAXDISTANCE = 2000000
 
 
-def natural_sort(l):
+def natural_string_sort(strings: list) -> list:
+    """Sort a list of strings lowercase-alphabetically, for the alphabetical character parts, and numerically, for the
+    numeric parts."""
     convert = lambda text: int(text) if text.isdigit() else text.lower()
     alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
-    return sorted(l, key=alphanum_key)
+    return sorted(strings, key=alphanum_key)
 
 
-def rawGeneName(extendedGeneName):
+def firstRawGeneName(extendedGeneName: str) -> str:
+    """Extract rawName from in input string of the form 'rawName(|restA)?(;restB)*'. The ;-separated expression will
+    probably be also extended gene names, but this function only returns the *first* gene name it can parse from the
+    input string. If 'rawName(|restA)' contains an underscore, the last underscore-separated component will be dropped
+    and 'rawName' (left of leftmost '|') will be returned. Thus if the rightmost '_' is left of the '|' the rawName
+    will be shorter than the part left of the '|'."""
     extendedGeneName = extendedGeneName.split(';')[0]
     if '_' in extendedGeneName:
         return '_'.join(extendedGeneName.split('_')[:-1]).split('|')[0]
@@ -48,40 +56,66 @@ def rawGeneName(extendedGeneName):
         return extendedGeneName.split('|')[0]
 
 
-def getDirectFusion(gene1Raw, gene2Raw):
+def getFusionList(unfilteredGenes1: list, unfilteredGenes2: list) -> list:
+    """Given two lists of genes, genes1 and genes2, return a list of gene pairs (lists) [g1, g2]. The g1 and g2 values
+    will be raw gene names, unless the raw gene names g1 == g2, in which case the function falls back to returning
+    extended gene names. Note that because extended gene names that are both in genes1 and genes2 are currently removed
+    from the input, always g1 != g2 (raw or extended). Note that g1 will be derived from genes1 and g2 from genes2."""
+    genes1 = [x for x in unfilteredGenes1 if x not in unfilteredGenes2]
+    genes2 = [x for x in unfilteredGenes2 if x not in unfilteredGenes1]
+    fusionList = list()
+    for x in set([x for x in itertools.product(genes1, genes2)]):
+        rawName1 = firstRawGeneName(x[0])
+        rawName2 = firstRawGeneName(x[1])
+        if rawName1 == rawName2:
+            fusionList.append(list(x))
+        else:
+            fusionList.append([rawName1, rawName2])
+    return fusionList
+
+
+def deduplicateFusionsList(fusionList: list) -> list:
+    """Identify pairs (a, b) and (b, a). Note that the input pairs (x, y) are returned as (x, y) and never (y, x),
+    i.e. the order (x, y) is preserved. Furthermore, of a pair (a, b) and a pair (b, a) following later in the list,
+    only the first (a, b) is returned, but (b, a) is dropped."""
+    deduplicatedFusions = list()
+    seenFusions = set()
+    for fusion in fusionList:
+        # FusionIDs are (naturally) sorted to yield unique identifiers and remove symmetric pairs
+        # (a,b)/(b,a) from the fusionList. Note that fusionID is thrown away in the end, because only the original
+        # `fusion` variable is added to the output list. Thus, the sorting is only for the deduplication.
+        fusionID = '-'.join(natural_string_sort(fusion))
+        if fusionID not in seenFusions:
+            seenFusions.add(fusionID)
+            deduplicatedFusions.append(fusion)
+    return deduplicatedFusions
+
+
+def getDirectFusionStr(gene1Raw: str, gene2Raw: str) -> str:
+    """Given two strings of comma-separated extended gene names, produce a string representing direct fusions. The
+    string consists of a comma-separated list of pairs g1-g2, where g1 derives from input gene1Raw and g2 derives from
+    gene2Raw. g1 and g2 are usually raw gene names, unless (1) they occur in both lists (see getFusionList()), or (2)
+    the corresponding raw gene names in the pair g1-g2 are identical, in which case a fallback to the extended gene name
+    happens. Note that the output order is stable by simply sorting the pair strings "g1-g2" before output. If a gene is
+    paired with '.', then, instead of '.', '(TRUNC)' is returned. If no pairs are found '.' is returned. This is for
+    instance the case if gene1Raw or gene2Raw input is empty (i.e. '.' or '')."""
     if gene1Raw in {".", ""} and gene2Raw in {".", ""}:
         return "."
     if gene1Raw == gene2Raw:
         return "."
-    gene1ListPre = gene1Raw.split(',')
-    gene2ListPre = gene2Raw.split(',')
-    genes1 = natural_sort([x for x in gene1ListPre if x not in gene2ListPre])
-    genes2 = natural_sort([x for x in gene2ListPre if x not in gene1ListPre])
-    fusionList = list()
-    for x in set(itertools.product(genes1, genes2)):
-        rawName1 = rawGeneName(x[0])
-        rawName2 = rawGeneName(x[1])
-        if rawName1 == rawName2:
-            fusionList.append(x)
-        else:
-            fusionList.append((rawName1, rawName2))
-    sortedFusions = set()
-    filteredFusionList = list()
-    fusionCandidates = list()
+    genes1 = natural_string_sort(gene1Raw.split(','))
+    genes2 = natural_string_sort(gene2Raw.split(','))
+    fusionList = getFusionList(genes1, genes2)
     if len(fusionList) > 0:
-        for fusion in fusionList:
-            fusionID = '-'.join(natural_sort(fusion))
-            if fusionID not in sortedFusions:
-                sortedFusions.add(fusionID)
-                filteredFusionList.append(fusion)
+        deduplicatedFusionList = deduplicateFusionsList(fusionList)
         fusionCandidates = list()
-        for fusionPre in filteredFusionList:
-            fusion = list(fusionPre)
+        for fusion in deduplicatedFusionList:
             if fusion[0] in {'', '.'}:
                 fusion[0] = "(TRUNC)"
             if fusion[1] in {'', '.'}:
                 fusion[1] = "(TRUNC)"
             if fusion[0] != fusion[1]:
+                # Eventually, join to fused pairs to "g1-g2" pairs, with g1<-genes1 & g2<-genes2
                 fusionCandidates.append('-'.join(fusion))
         if len(fusionCandidates) > 0:
             return ','.join(sorted(fusionCandidates))
@@ -91,163 +125,102 @@ def getDirectFusion(gene1Raw, gene2Raw):
         return "."
 
 
-for line in fileinput.input():
-    if line[0] == '#':
-        print(line.rstrip(), "directFusionCandidates", "directFusionCandidatesBothCancer", "indirectFusionCandidatesLeftCancerRightAny",
-              "indirectFusionCandidatesRightCancerLeftAny", "indirectFusionCandidatesAny", sep='\t')
-    else:
-        directFusionCandidates = ""
-        directFusionCandidatesBothCancer = ""
-        indirectFusionCandidatesLeftCancerRightAny = ""
-        indirectFusionCandidatesRightCancerLeftAny = ""
-        indirectFusionCandidatesAny = ""
-        lineChunks = line.rstrip().split('\t')
-        gene1Raw = ','.join([x.split(';')[0] for x in lineChunks[20].split(',')])
-        gene1RawCancer = ','.join([x.split(';')[0] for x in lineChunks[21].split(',')])
-        gene1NearestUpstreamRaw = lineChunks[22]
-        if gene1NearestUpstreamRaw not in {'', '.'}:
-            gene1NearestUpstreamDistance = int(lineChunks[23])
-            if gene1NearestUpstreamDistance > MAXDISTANCE:
-                gene1NearestUpstreamRaw = ""
-        else:
-            gene1NearestUpstreamRaw = ""
-        gene1NearestUpstreamCancer = ','.join([x.split(';')[0] for x in lineChunks[24].split(',')])
-        if gene1NearestUpstreamCancer not in {'', '.'}:
-            gene1NearestUpstreamCancerDistance = int(lineChunks[25])
-            if gene1NearestUpstreamCancerDistance > MAXDISTANCE:
-                gene1NearestUpstreamCancer = ""
-        else:
-            gene1NearestUpstreamCancer = ""
-        gene1NearestDownstreamRaw = ','.join([x.split(';')[0] for x in lineChunks[26].split(',')])
-        if gene1NearestDownstreamRaw not in {'', '.'}:
-            gene1NearestDownstreamDistance = int(lineChunks[27])
-            if gene1NearestDownstreamDistance > MAXDISTANCE:
-                gene1NearestDownstreamRaw = ""
-        else:
-            gene1NearestDownstreamRaw = ""
-        gene1NearestDownstreamCancer = ','.join([x.split(';')[0] for x in lineChunks[28].split(',')])
-        if gene1NearestDownstreamCancer not in {'', '.'}:
-            gene1NearestDownstreamCancerDistance = int(lineChunks[29])
-            if gene1NearestDownstreamCancerDistance > MAXDISTANCE:
-                gene1NearestDownstreamCancer = ""
-        else:
-            gene1NearestDownstreamCancer = ""
-        gene2Raw = ','.join([x.split(';')[0] for x in lineChunks[30].split(',')])
-        gene2RawCancer = ','.join([x.split(';')[0] for x in lineChunks[31].split(',')])
-        gene2NearestUpstreamRaw = ','.join([x.split(';')[0] for x in lineChunks[32].split(',')])
-        if gene2NearestUpstreamRaw not in {'', '.'}:
-            gene2NearestUpstreamDistance = int(lineChunks[33])
-            if gene2NearestUpstreamDistance > MAXDISTANCE:
-                gene2NearestUpstreamRaw = ""
-        else:
-            gene2NearestUpstreamRaw = ""
-        gene2NearestUpstreamCancer = ','.join([x.split(';')[0] for x in lineChunks[34].split(',')])
-        if gene2NearestUpstreamCancer not in {'', '.'}:
-            gene2NearestUpstreamCancerDistance = int(lineChunks[35])
-            if gene2NearestUpstreamCancerDistance > MAXDISTANCE:
-                gene2NearestUpstreamCancer = ""
-        else:
-            gene2NearestUpstreamCancer = ""
-        gene2NearestDownstreamRaw = ','.join([x.split(';')[0] for x in lineChunks[36].split(',')])
-        if gene2NearestDownstreamRaw not in {'', '.'}:
-            gene2NearestDownstreamDistance = int(lineChunks[37])
-            if gene2NearestDownstreamDistance > MAXDISTANCE:
-                gene2NearestDownstreamRaw = ""
-        else:
-            gene2NearestDownstreamRaw = ""
-        gene2NearestDownstreamCancer = ','.join([x.split(';')[0] for x in lineChunks[38].split(',')])
-        if gene2NearestDownstreamCancer not in {'', '.'}:
-            gene2NearestDownstreamCancerDistance = int(lineChunks[39])
-            if gene2NearestDownstreamCancerDistance > MAXDISTANCE:
-                gene2NearestDownstreamCancer = ""
-        else:
-            gene2NearestDownstreamCancer = ""
-        directFusionCandidates = getDirectFusion(gene1Raw, gene2Raw)
-        directFusionCandidatesBothCancer = getDirectFusion(gene1RawCancer, gene2RawCancer)
-        leftComponent = ""
-        if gene1RawCancer in {"", "."}:
-            if (gene1NearestDownstreamCancer not in {"", "."}) or (gene1NearestUpstreamCancer not in {"", "."}):
-                if gene1NearestUpstreamCancer not in {"", "."}:
-                    leftComponent += "~" + gene1NearestUpstreamCancer
-                leftComponent += "/"
-                if gene1NearestDownstreamCancer not in {"", "."}:
-                    leftComponent += "~" + gene1NearestDownstreamCancer
-            else:
-                leftComponent = "(TRUNC)"
-        else:
-            leftComponent = gene1RawCancer
-        rightComponent = ""
-        if gene2Raw in {"", "."}:
-            if (gene2NearestUpstreamRaw not in {"", "."}) or (gene2NearestDownstreamRaw not in {"", "."}):
-                if gene2NearestUpstreamRaw not in {"", "."}:
-                    rightComponent += "~" + gene2NearestUpstreamRaw
-                rightComponent += "/"
-                if gene2NearestDownstreamRaw not in {"", "."}:
-                    rightComponent += "~" + gene2NearestDownstreamRaw
-            else:
-                rightComponent = "(TRUNC)"
-        else:
-            rightComponent = rawGeneName(gene2Raw)
-        if leftComponent != rightComponent:
-            indirectFusionCandidatesLeftCancerRightAny = leftComponent + "-" + rightComponent
-        else:
-            indirectFusionCandidatesLeftCancerRightAny = "."
-        leftComponent = ""
-        if gene1Raw in {"", "."}:
-            if (gene1NearestUpstreamRaw not in {"", "."}) or (gene1NearestDownstreamRaw not in {"", "."}):
-                if gene1NearestUpstreamRaw not in {"", "."}:
-                    leftComponent += "~" + gene1NearestUpstreamRaw
-                leftComponent += "/"
-                if gene1NearestDownstreamRaw not in {"", "."}:
-                    leftComponent += "~" + gene1NearestDownstreamRaw
-            else:
-                leftComponent = "(TRUNC)"
-        else:
-            leftComponent = rawGeneName(gene1Raw)
-        rightComponent = ""
-        if gene2RawCancer in {"", "."}:
-            if (gene2NearestUpstreamCancer not in {"", "."}) or (gene2NearestDownstreamCancer not in {"", "."}):
-                if gene2NearestUpstreamCancer not in {"", "."}:
-                    rightComponent += "~" + gene2NearestUpstreamCancer
-                rightComponent += "/"
-                if gene2NearestDownstreamCancer not in {"", "."}:
-                    rightComponent += "~" + gene2NearestDownstreamCancer
-            else:
-                rightComponent = "(TRUNC)"
-        else:
-            rightComponent = gene2RawCancer
-        if leftComponent != rightComponent:
-            indirectFusionCandidatesRightCancerLeftAny = leftComponent + "-" + rightComponent
-        else:
-            indirectFusionCandidatesRightCancerLeftAny = "."
-        leftComponent = ""
+def extractIdListFromListOfIdSemicolonElems(string: str) -> str:
+    """Given identifier lists of the form "a;a1,b;b1,c;c1", extract the list "a,b,c"."""
+    return ','.join([elem.split(';')[0] for elem in string.split(',')])
 
-        if gene1Raw in {"", "."}:
-            if (gene1NearestUpstreamRaw not in {"", "."}) or (gene1NearestDownstreamRaw not in {"", "."}):
-                if gene1NearestUpstreamRaw not in {"", "."}:
-                    leftComponent += "~" + gene1NearestUpstreamRaw
-                leftComponent += "/"
-                if gene1NearestDownstreamRaw not in {"", "."}:
-                    leftComponent += "~" + gene1NearestDownstreamRaw
-            else:
-                leftComponent = "(TRUNC)"
+
+def distanceFilter(value: str, distanceStr: str, max_distance: int = MAXDISTANCE) -> str:
+    if value not in {'', '.'}:
+        if int(distanceStr) > max_distance:
+            return ""
         else:
-            leftComponent = rawGeneName(gene1Raw)
-        rightComponent = ""
-        if gene2Raw in {"", "."}:
-            if (gene2NearestUpstreamRaw not in {"", "."}) or (gene2NearestDownstreamRaw not in {"", "."}):
-                if gene2NearestUpstreamRaw not in {"", "."}:
-                    rightComponent += "~" + gene2NearestUpstreamRaw
-                rightComponent += "/"
-                if gene2NearestDownstreamRaw not in {"", "."}:
-                    rightComponent += "~" + gene2NearestDownstreamRaw
-            else:
-                rightComponent = "(TRUNC)"
+            return value
+    else:
+        return ""
+
+
+def getIndirectFusionComponentStr(geneRaw: str, geneNearestDownstream: str, geneNearestUpstream: str) -> str:
+    componentStr = "None"
+    if geneRaw in {"", "."}:
+        if (geneNearestDownstream not in {"", "."}) or (geneNearestUpstream not in {"", "."}):
+            if geneNearestUpstream not in {"", "."}:
+                componentStr += "~" + geneNearestUpstream
+            componentStr += "/"
+            if geneNearestDownstream not in {"", "."}:
+                componentStr += "~" + geneNearestDownstream
         else:
-            rightComponent = rawGeneName(gene2Raw)
-        if leftComponent != rightComponent:
-            indirectFusionCandidatesAny = leftComponent + "-" + rightComponent
+            componentStr = "(TRUNC)"
+    else:
+        componentStr = geneRaw
+    return componentStr
+
+
+def getIndirectFusionStr(gene1: str, gene1NearestUpstream: str, gene1NearestDownstream: str,
+                         gene2: str, gene2NearestUpstream: str, gene2NearestDownstream: str) -> str:
+    leftComponent =  getIndirectFusionComponentStr(gene1, gene1NearestUpstream, gene1NearestDownstream)
+    rightComponent = getIndirectFusionComponentStr(gene2, gene2NearestUpstream, gene2NearestDownstream)
+    if leftComponent != rightComponent:
+        return leftComponent + "-" + rightComponent
+    else:
+        return "."
+
+
+line_no = 0
+try:
+    for line in fileinput.input():
+        line_no += 1
+        if line[0] == '#':
+            print(line.rstrip(), "directFusionCandidates", "directFusionCandidatesBothCancer",
+                  "indirectFusionCandidatesLeftCancerRightAny",
+                  "indirectFusionCandidatesRightCancerLeftAny", "indirectFusionCandidatesAny", sep='\t')
         else:
-            indirectFusionCandidatesAny = "."
-        print(line.rstrip(), directFusionCandidates, directFusionCandidatesBothCancer, indirectFusionCandidatesLeftCancerRightAny,
-              indirectFusionCandidatesRightCancerLeftAny, indirectFusionCandidatesAny, sep='\t')
+            lineChunks = line.rstrip().split('\t')
+
+            gene1Raw =                     extractIdListFromListOfIdSemicolonElems(lineChunks[20])
+            gene1RawCancer =               extractIdListFromListOfIdSemicolonElems(lineChunks[21])
+            gene1NearestUpstreamRaw =      distanceFilter(lineChunks[22],
+                                                          distanceStr=lineChunks[23])
+            gene1NearestUpstreamCancer =   distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[24]),
+                                                          distanceStr=lineChunks[25])
+            gene1NearestDownstreamRaw =    distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[26]),
+                                                          distanceStr=lineChunks[27])
+            gene1NearestDownstreamCancer = distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[28]),
+                                                          distanceStr=lineChunks[29])
+
+            gene2Raw =                     extractIdListFromListOfIdSemicolonElems(lineChunks[30])
+            gene2RawCancer =               extractIdListFromListOfIdSemicolonElems(lineChunks[31])
+            gene2NearestUpstreamRaw =      distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[32]),
+                                                          distanceStr=lineChunks[33])
+            gene2NearestUpstreamCancer =   distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[34]),
+                                                          distanceStr=lineChunks[35])
+            gene2NearestDownstreamRaw =    distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[36]),
+                                                          distanceStr=lineChunks[37])
+            gene2NearestDownstreamCancer = distanceFilter(extractIdListFromListOfIdSemicolonElems(lineChunks[38]),
+                                                          distanceStr=lineChunks[39])
+
+            indirectFusionCandidatesLeftCancerRightAny = \
+                getIndirectFusionStr(gene1RawCancer, gene1NearestUpstreamCancer, gene1NearestDownstreamCancer,
+                                     gene2Raw, gene2NearestUpstreamRaw, gene2NearestDownstreamRaw)
+
+            indirectFusionCandidatesRightCancerLeftAny = \
+                getIndirectFusionStr(gene1Raw, gene1NearestUpstreamRaw, gene1NearestDownstreamRaw,
+                                     gene2RawCancer, gene2NearestUpstreamCancer, gene2NearestDownstreamCancer)
+
+            indirectFusionCandidatesAny = \
+                getIndirectFusionStr(gene1Raw, gene1NearestUpstreamRaw, gene1NearestDownstreamRaw,
+                                     gene2Raw, gene2NearestUpstreamRaw, gene2NearestDownstreamRaw)
+
+            directFusionCandidates = \
+                getDirectFusionStr(gene1Raw, gene2Raw)
+            directFusionCandidatesBothCancer = \
+                getDirectFusionStr(gene1RawCancer, gene2RawCancer)
+
+            print(line.rstrip(),
+                  directFusionCandidates, directFusionCandidatesBothCancer,
+                  indirectFusionCandidatesLeftCancerRightAny, indirectFusionCandidatesRightCancerLeftAny,
+                  indirectFusionCandidatesAny, sep='\t')
+
+except Exception as e:
+    print("Error while processing line {}: {}".format(line_no, e), file=sys.stderr)
+    sys.exit(1)

@@ -49,14 +49,13 @@ ignoreEc() {
 BROKEN_PIPE=141
 outputSize=$(gunzip -c "$BPS_OUT_TMP" | head -n 10 | wc -l || ignoreEc $BROKEN_PIPE)
 if [[ "$outputSize" -eq 0 ]]; then
-    # The file should have a header.
+    # The file should have at least a header. Otherwise this is an indication that ...
     echo "Sophia binary may have failed. No output whatsoever" >> /dev/stderr
     exit 10
 elif [[ "$outputSize" -eq 1 ]]; then
-    # The file must have a header.
-    # Empty output means, the data may have been of too low quality or depth.
-    # Instead of continuing and failing in a later job, rather fail here early with a dedicated exit code.
-    # BUT, OTP is not prepared to handle this condition, so for the time being return exit 0 and continue!
+    # If the file has a header but otherwise no output, the data may have been of too low quality or depth.
+    # Instead of continuing and failing in a later job we could fail here early with a dedicated exit code.
+    # BUT, OTP is not prepared to handle this condition, so for the time being, return exit 0 and continue!
     echo "Sophia binary call yielded empty results set" >> /dev/stderr
     mv "$BPS_OUT_TMP" "$BPS_OUT" || throw 100 "Could not move file: '$BPS_OUT_TMP'"
     exit 0

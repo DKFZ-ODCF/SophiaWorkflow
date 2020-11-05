@@ -74,7 +74,81 @@ roddy.sh run $configName@$analysisName $pid \
 
 With version 2, it is not possible anymore to provide the insert sizes via the `insertsizesfile_list` variable, like it was for the version 1. We strongly suggest you configure the workflow metadata manually, like shown above. However, if you want to retrieve the BAM files and their metadata from the filesystem, you can set `extractSamplesFromOutputFiles` to "true". This mode is less safe and clear than the more explicit way of calling the workflow and it should only work smoothly with the output of the AlignmentAndQCWorkflows Roddy-plugin. Furthermore, the `alignmentOutputDirectory` (default "alignment"), `insertSizesOutputDirectory` (default "insertsize_distribution", and `qcOutputDirectory` (default "qualitycontrol") need to be set correctly (and be of type "string" as preconfigured in the XML).
 
+## Output
+
+The workflow produces the  following files:
+
+
+| Filename Pattern | Content |
+|------------------|---------|
+| `{$tumor,$control}_$pid_bps.tsv.gz` | Output of the `sophia` binary. |
+| `$tumor_$pid_bps_annotatedAbridged.bedpe.WARNINGS` | Warning from the `sophiaAnnotation` binary. |
+| `svs_*_filtered_somatic_minEventScore3.tsv` |  |
+| `svs_*_filtered_dedup_somatic.tsv` |  |
+| `svs_*_filtered.tsv` |  | 
+| `svs_*_filtered_germlineStrict.tsv` |  |
+| `svs_*_filtered_somatic.tsv` | |
+| `svs_*_filtered_dedup.tsv` | |
+| `svs_*_filtered_dedup_germlineStrict.tsv` | |
+| `svs_*_filtered_somatic_overhangCandidates.tsv` | |
+| `svs_*_filtered.tsv_score_3_scaled_merged.pdf` | Summary information. | 
+| `qualitycontrol.json` | Some quality control information in JSON format. |
+
+
+The `svs_*_filtered_*.tsv` files, except of the `*_overhangCandidates.tsv` have the same format with a very large number of columns listing genes and particularly known cancer-related genes close to structural variations.
+
+| Column | Description |
+|--------|-------------|
+| chrom{1,2} |  |
+| start{1,2} | |
+| end{1,2} | |
+| somaticity{1,2} | |
+| svtype | |
+| eventScore | |
+| eventSize | |
+| eventInversion | |
+| evidence{1,2} | |
+| clonalityRatio{1,2} | |
+| source{1,2} | |
+| overhang{1,2} | |
+| gene{1,2} | |
+| cancerGene{1,2} | |
+| nearestCodingGene{Upstream,Downstream}{1,2} | |
+| nearestCodingGene{Upstream,Downstream}Distance{1,2} | |
+| nearestCancerGene{Upstream,Downstream}{1,2} | |
+| nearestCancerGene{Upstream,Downstream}Distance{1,2} | |
+| dbSUPERenhancer{1,2} | |
+| rescuedEnhancerHitCandidate | |
+| TADindices | |
+| affectedGenesTADestimate | |
+| affectedCancerGenesTADestimate | |
+| chrom{1,2}PreDecoyRemap | |
+| start{1,2}PreDecoyRemap | |
+| end{1,2}PreDecoyRemap | |
+| directFusionCandidates | |
+| directFusionCandidatesBothCancer | |
+| indirectFusionCandidatesLeftCancerRightAny | |
+| indirectFusionCandidatesRightCancerLeftAny | |
+| indirectFusionCandidatesAny | |
+
+
+The script `fusionCandidates.py` generates some of the columns. Please refer to that script for the exact logic. The following only gives a rough description of what is happening there. In total there are 5 colums added, 2 for direct fusions and 3 for indirect fusions.
+
+The columns "directFusionCandidates" and "directFusionCandidatesBothCancer" are direct fusion candidates displayed in the format "leftComponent-rightComponent" with the candidates taken both from the `gene{1,2}Raw` or `gene{1,2}RawCancer` columns for the "directFusionCandidates" or "directFusionCandidatesBothCancer" columns, respectively. If one of the components has the value "" or "." in the gene column, the component is displayed as "(TRUNC)", if they are identical (both "(TRUNC)") then the value "." is given. 
+
+The columns "indirectFusionCandidatesLeftCancerRightAny", "indirectFusionCandidatesRightCancerLeftAny", and "indirectFusionCandidatesAny" show indirect fusion candidates in the format "leftComponent-rightComponent" where the components have the format "~nearestDownstream/~nearestUpstream". Generally, nearest gene neighbors are ignored if farther than 2 Mb away. 
+ 
+## Comparing results between identical runs
+
+For debugging purposes, e.g. during development, a Scala script is available that checks the `svs_*_filtered_*.tsv` files for identity. This script also does some basic format checks for the columns (like checking gene list formats, etc.). You can install Scala via [SDKman!](https://sdkman.io/). Execute the script with the two directories containing the `svs_*.tsv` files. Note that because prior to version 2.2.2 the fusion candidate columns were processed by quasi randomly selecting from 
+the processed gene identifiers columns, results from <2.2.2 and >=2.2.2 cannot be compared directly. A check that the identifiers in the fusion candidate strings may have been taken from the other colunms has not yet been implemented (due to its complexity). To compare results involving versions <2.2.2, use "false" as the first parameter additionally to the two directories to compare. The candidates columns are then ignored and **not** checked at all.
+
 ## Change Log
+
+* 2.2.3
+
+  * Refactorings and documentation to improve code clarity
+  * Added comparison script `compareSVsTSVs` for `svs*.tsv` files.
 
 * 2.2.2
 
