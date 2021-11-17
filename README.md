@@ -47,6 +47,7 @@ If you want all output to go into the `outputAnalysisBaseDirectory` just set `so
 | tumorStdIsizePercentage     | \[median insert size / standard deviation insert size * 100\] |
 | controlProperPairPercentage | Properly paired read pairs in control \[#(properly paired) / #(paired) * 100\] |
 | tumorProperPairPercentage   | Properly paired read pairs in tumor \[#(properly paired) / #(paired) * 100\]|
+| isNoControlWorkflow         | If "true" then the tumor samples are analysed without controls |
 --------------------------------
 
 ## Starting the Workflow
@@ -73,6 +74,10 @@ roddy.sh run $configName@$analysisName $pid \
 ```
 
 With version 2, it is not possible anymore to provide the insert sizes via the `insertsizesfile_list` variable, like it was for the version 1. We strongly suggest you configure the workflow metadata manually, like shown above. However, if you want to retrieve the BAM files and their metadata from the filesystem, you can set `extractSamplesFromOutputFiles` to "true". This mode is less safe and clear than the more explicit way of calling the workflow and it should only work smoothly with the output of the AlignmentAndQCWorkflows Roddy-plugin. Furthermore, the `alignmentOutputDirectory` (default "alignment"), `insertSizesOutputDirectory` (default "insertsize_distribution", and `qcOutputDirectory` (default "qualitycontrol") need to be set correctly (and be of type "string" as preconfigured in the XML).
+
+### No control?
+
+You can run the Sophia workflow without a control sample. For this you need to set the `isNoControlWorkflow` variable to "true". You still need to set the `possibleTumorSampleNamePrefixes` to the prefixes of the allowed tumor samples and all the other "tumor"-related variables, but variables refering to "control", such as `controlStdIsizePercentage`, are then not required.
 
 ## Output
 
