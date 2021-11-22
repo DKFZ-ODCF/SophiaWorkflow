@@ -1,6 +1,6 @@
 # Description
 
-[Sophia](https://bitbucket.org/utoprak/sophia) is a tool for identifying somatic structural variations in tumor-control sample pairs. It was developed by Umut Toprak at the Computational Oncology group, Theoretical Bioinformatics, German Cancer Research Center (DKFZ). This repository code allows to run Sophia with [Roddy](https://github.com/TheRoddyWMS/Roddy).
+[Sophia](https://bitbucket.org/utoprak/sophia) is a tool for identifying somatic structural variations in tumor-control sample pairs. It was developed by Umut Toprak at the Computational Oncology group, Theoretical Bioinformatics, German Cancer Research Center (DKFZ). Please have a look at Umut's PhD theses at https://doi.org/10.11588/heidok.00027429, in particular chapter 2. This repository code allows to run Sophia with [Roddy](https://github.com/TheRoddyWMS/Roddy).
 
 ## Installation
 
