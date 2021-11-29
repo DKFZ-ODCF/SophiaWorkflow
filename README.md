@@ -4,7 +4,7 @@ A workflow calling structural variants in cancer samples. This repository code a
 
 ## Method
 
-[Sophia](https://bitbucket.org/utoprak/sophia) is a tool for identifying somatic structural variations in tumor-control sample pairs. It was developed by Umut Toprak at the Computational Oncology group, Theoretical Bioinformatics, German Cancer Research Center (DKFZ). Please have a look at Umut's PhD thesis at https://doi.org/10.11588/heidok.00027429, in particular chapter 2. Section 2.2.1 describes the method in more details. Sophia is very CPU and memory efficient and can detect variants with a single pass of the input BAM files (resoure requirements shown in the [default config](./blob/7e306612f3e19346a95152ddbb0b86fffef4fbde/resources/configurationFiles/sophiaAnalysis.xml#L176) are sufficient for extreme cases, such as chromothripsis). The algorithm relies on the noisy information present in "supplementary alignments" produced by the aligner (usually BWA) combined with filters based on expert-knowledge to increase specificity. No local assembly is done.
+[Sophia](https://bitbucket.org/utoprak/sophia) is a tool for identifying somatic structural variations in tumor-control sample pairs. It was developed by Umut Toprak at the German Cancer Research Center (DKFZ). Please have a look at Umut's dissertation at https://doi.org/10.11588/heidok.00027429, in particular chapter 2. Section 2.2.1 describes the method in more details. Sophia is very CPU and memory efficient and can detect variants with a single pass of the input BAM files (resoure requirements shown in the [default config](./blob/7e306612f3e19346a95152ddbb0b86fffef4fbde/resources/configurationFiles/sophiaAnalysis.xml#L176) are sufficient for extreme cases, such as chromothripsis). The algorithm relies on the noisy information present in "supplementary alignments" produced by the aligner (usually BWA) combined with filters based on expert-knowledge to increase specificity. No local assembly is done.
 
 You can cite Sophia as follows:
 
@@ -154,10 +154,10 @@ The columns "directFusionCandidates" and "directFusionCandidatesBothCancer" are 
 
 The columns "indirectFusionCandidatesLeftCancerRightAny", "indirectFusionCandidatesRightCancerLeftAny", and "indirectFusionCandidatesAny" show indirect fusion candidates in the format "leftComponent-rightComponent" where the components have the format "~nearestDownstream/~nearestUpstream". Generally, nearest gene neighbors are ignored if farther than 2 Mb away. 
  
-## Comparing results between identical runs
+### A bit of developer docs: Comparing results between identical runs
 
-For debugging purposes, e.g. during development, a Scala script is available that checks the `svs_*_filtered_*.tsv` files for identity. This script also does some basic format checks for the columns (like checking gene list formats, etc.). You can install Scala via [SDKman!](https://sdkman.io/). Execute the script with the two directories containing the `svs_*.tsv` files. Note that because prior to version 2.2.2 the fusion candidate columns were processed by quasi randomly selecting from 
-the processed gene identifiers columns, results from <2.2.2 and >=2.2.2 cannot be compared directly. A check that the identifiers in the fusion candidate strings may have been taken from the other colunms has not yet been implemented (due to its complexity). To compare results involving versions <2.2.2, use "false" as the first parameter additionally to the two directories to compare. The candidates columns are then ignored and **not** checked at all.
+For debugging purposes, e.g. during development, a [script](./compareSVsTSVs) is available that checks the `svs_*_filtered_*.tsv` files for identity. This script also does some basic format checks for the columns (like checking gene list formats, etc.). You can install Scala via [SDKman!](https://sdkman.io/). Execute the script with the two directories containing the `svs_*.tsv` files. Note that because prior to version 2.2.2 the fusion candidate columns were processed by quasi randomly selecting from 
+the processed gene identifiers columns, results from <2.2.2 and >=2.2.2 cannot be compared directly. A check that the identifiers in the fusion candidate strings may have been, taken from the other colunms, has not yet been implemented in the script (due to its complexity). To compare results involving versions <2.2.2, use "false" as the first parameter additionally to the two directories to compare. The candidates columns are then ignored and **not** checked at all.
 
 ## Change Log
 
