@@ -115,11 +115,11 @@ The `svs_*_filtered_*.tsv` files, except of the `*_overhangCandidates.tsv` have 
 
 | Column | Description |
 |--------|-------------|
-| chrom{1,2} |  |
-| start{1,2} | |
-| end{1,2} | |
+| chrom{1,2} | Mapping chromosomes of the fragment ends |
+| start{1,2} | Start positions of the fragment ends |
+| end{1,2} | End positions of the fragment ends |
 | somaticity{1,2} | |
-| svtype | |
+| svtype |  |
 | eventScore | |
 | eventSize | |
 | eventInversion | |
@@ -141,14 +141,15 @@ The `svs_*_filtered_*.tsv` files, except of the `*_overhangCandidates.tsv` have 
 | chrom{1,2}PreDecoyRemap | |
 | start{1,2}PreDecoyRemap | |
 | end{1,2}PreDecoyRemap | |
-| directFusionCandidates | |
-| directFusionCandidatesBothCancer | |
-| indirectFusionCandidatesLeftCancerRightAny | |
-| indirectFusionCandidatesRightCancerLeftAny | |
-| indirectFusionCandidatesAny | |
+| directFusionCandidates | See below. |
+| directFusionCandidatesBothCancer | See below. |
+| indirectFusionCandidatesLeftCancerRightAny | See below. |
+| indirectFusionCandidatesRightCancerLeftAny | See below |
+| indirectFusionCandidatesAny | See below. |
 
+Please refer to [Umut Toprak's dissertation](https://doi.org/10.11588/heidok.00027429), which may make the semantics of some of the columns clearer.
 
-The script `fusionCandidates.py` generates some of the columns. Please refer to that script for the exact logic. The following only gives a rough description of what is happening there. In total there are 5 colums added, 2 for direct fusions and 3 for indirect fusions.
+The script `fusionCandidates.py` generates some of the columns. Please refer to that script for the exact logic. The following only gives a rough description of what is happening there. In total there are 5 colums added by that script, 2 for direct fusions and 3 for indirect fusions.
 
 The columns "directFusionCandidates" and "directFusionCandidatesBothCancer" are direct fusion candidates displayed in the format "leftComponent-rightComponent" with the candidates taken both from the `gene{1,2}Raw` or `gene{1,2}RawCancer` columns for the "directFusionCandidates" or "directFusionCandidatesBothCancer" columns, respectively. If one of the components has the value "" or "." in the gene column, the component is displayed as "(TRUNC)", if they are identical (both "(TRUNC)") then the value "." is given. 
 
