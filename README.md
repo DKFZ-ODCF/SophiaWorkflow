@@ -68,7 +68,7 @@ Most metadata are best provided via dedicated variables.
 ```bash
 roddy.sh run $configName@$analysisName $pid \
   --useconfig=/path/to/your/applicationProperties.ini \
-  --configurationValues="\
+  --cvalues="\
       REFERENCES_BASE:/the/path/to/your/sophia/35/reference/files,\
       bamfile_list:$controlBam;$tumorBam,\
       sample_list:$controlName;$tumorName,
