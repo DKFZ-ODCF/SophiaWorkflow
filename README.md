@@ -61,12 +61,34 @@ If you want all output to go into the `outputAnalysisBaseDirectory` just set `so
 | isNoControlWorkflow         | If "true" then the tumor samples are analysed without controls |
 --------------------------------
 
+For instance, the following may be a valid configuration XML that you may use as base configuration for a project:
+
+```xml
+<configuration configurationType="project" 
+              name="someProject" 
+              description="SOPHIA SV calling workflow"> 
+
+   <availableAnalyses> 
+       <analysis id="svCalling" configuration="sophiaAnalysis" useplugin="SophiaWorkflow:2.2.3"/> 
+   </availableAnalyses> 
+
+   <configurationvalues>
+     <cvalue name='outputFileGroup' value=''/>
+     <cvalue name='outputUMask' value='007' type='string'/> 
+   </configurationvalues>
+</configuration>
+```
+
+When calling the workflow with Roddy, the corresponding "configuration" would be `someProject@svCalling`, i.e. the configuration name (maybe with subconfigurations separated with dots), then an `@` symbol, finally the analysis `id` attribute.
+
+
+
 ## Starting the Workflow
 
 Most metadata are best provided via dedicated variables. 
 
 ```bash
-roddy.sh run $configName@$analysisName $pid \
+roddy.sh run someProject@svCalling $pid \
   --useconfig=/path/to/your/applicationProperties.ini \
   --cvalues="\
       REFERENCES_BASE:/the/path/to/your/sophia/35/reference/files,\
