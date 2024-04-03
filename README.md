@@ -106,11 +106,13 @@ roddy.sh run someProject@svCalling $pid \
       tumorProperPairPercentage:${tumorProperPairPercentage}"
 ```
 
-With version 2, it is not possible anymore to provide the insert sizes via the `insertsizesfile_list` variable, like it was for the version 1. We strongly suggest you configure the workflow metadata manually, like shown above. However, if you want to retrieve the BAM files and their metadata from the filesystem, you can set `extractSamplesFromOutputFiles` to "true". This mode is less safe and clear than the more explicit way of calling the workflow and it should only work smoothly with the output of the AlignmentAndQCWorkflows Roddy-plugin. Furthermore, the `alignmentOutputDirectory` (default "alignment"), `insertSizesOutputDirectory` (default "insertsize_distribution", and `qcOutputDirectory` (default "qualitycontrol") need to be set correctly (and be of type "string" as preconfigured in the XML).
+In this example, we used the configuration name "someProject@svCalling" used in the example project-XML, and all parameters relevant for the sample-by-sample analyses are added _ad hoc_ with `--cvalues` on the command line. This would be appropriate, e.g., if you want to compose many analyses in one project. In principle, all parameters to `--cvalues` could be moved into the configuration XML, but for the SophiaWorkflow there are many sample-specific parameters. 
+
+With version 2, it is not possible anymore to provide the insert sizes via the `insertsizesfile_list` variable, like it was for the version 1. We strongly suggest you configure the workflow metadata manually, like shown above. The workflow and Roddy are also able to retrieve some metadata from the filesystem, e.g. the sample names, and individual/patient names if you set `extractSamplesFromOutputFiles` to "true". However, this mode is less safe and clear than the more explicit way of calling the workflow and it should only work smoothly with the output of the AlignmentAndQCWorkflows Roddy-plugin. Furthermore, the `alignmentOutputDirectory` (default "alignment"), `insertSizesOutputDirectory` (default "insertsize_distribution", and `qcOutputDirectory` (default "qualitycontrol") need to be set correctly (and be of type "string" as preconfigured in the XML).
 
 ### No control?
 
-You can run the Sophia workflow without a control sample. For this you need to set the `isNoControlWorkflow` variable to "true". You still need to set the `possibleTumorSampleNamePrefixes` to the prefixes of the allowed tumor samples and all the other "tumor"-related variables, but variables refering to "control", such as `controlStdIsizePercentage`, are then not required.
+You can run the Sophia workflow without a control sample. For this you need to set the `isNoControlWorkflow` configuration value to "true" (e.g. via `--cvalues` or the XML). You still need to set the `possibleTumorSampleNamePrefixes` to the prefixes of the allowed tumor samples and all the other "tumor"-related variables, but variables refering to "control", such as `controlStdIsizePercentage`, are then not required.
 
 ## Output
 
