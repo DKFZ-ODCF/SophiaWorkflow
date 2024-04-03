@@ -1,10 +1,10 @@
 # Description
 
-A workflow calling structural variants in cancer samples. This repository code allows to run [Sophia](https://bitbucket.org/utoprak/sophia) with [Roddy](https://github.com/TheRoddyWMS/Roddy).
+A workflow calling structural variants in cancer samples, which wraps the [Sophia](https://bitbucket.org/utoprak/sophia) tool using the [Roddy Workflow Management Systems](https://github.com/TheRoddyWMS/Roddy).
 
 ## Method
 
-[Sophia](https://bitbucket.org/utoprak/sophia) is a tool for identifying somatic structural variations in tumor-control sample pairs. It was developed by Umut Toprak at the German Cancer Research Center (DKFZ). Please have a look at Umut's dissertation at https://doi.org/10.11588/heidok.00027429, in particular chapter 2. Section 2.2.1 describes the method in more details. Sophia is very CPU and memory efficient and can detect variants with a single pass of the input BAM files (resoure requirements shown in the [default config](./blob/7e306612f3e19346a95152ddbb0b86fffef4fbde/resources/configurationFiles/sophiaAnalysis.xml#L176) are sufficient for extreme cases, such as chromothripsis). The algorithm relies on the noisy information present in "supplementary alignments" produced by the aligner (usually BWA) combined with filters based on expert-knowledge to increase specificity. No local assembly is done. The workflow is optimized for human assembly hg37.
+[Sophia](https://bitbucket.org/utoprak/sophia) is a tool for identifying somatic structural variations in tumor-control sample pairs. It was developed by Umut Toprak at the German Cancer Research Center (DKFZ). Please have a look at Umut's dissertation at https://doi.org/10.11588/heidok.00027429, in particular chapter 2. Section 2.2.1 describes the method in more details. Sophia is very CPU and memory efficient and can detect variants with a single pass of the input BAM files (resource requirements shown in the [default config](./blob/7e306612f3e19346a95152ddbb0b86fffef4fbde/resources/configurationFiles/sophiaAnalysis.xml#L176) are sufficient for extreme cases, such as chromothripsis). The algorithm relies on the noisy information present in "supplementary alignments" produced by the aligner (usually BWA) combined with filters based on expert-knowledge to increase specificity. No local assembly is done. The workflow is optimized for human assembly hg37.
 
 You can cite Sophia as follows:
 
@@ -112,7 +112,7 @@ With version 2, it is not possible anymore to provide the insert sizes via the `
 
 ### No control?
 
-You can run the Sophia workflow without a control sample. For this you need to set the `isNoControlWorkflow` configuration value to "true" (e.g. via `--cvalues` or the XML). You still need to set the `possibleTumorSampleNamePrefixes` to the prefixes of the allowed tumor samples and all the other "tumor"-related variables, but variables refering to "control", such as `controlStdIsizePercentage`, are then not required.
+You can run the Sophia workflow without a control sample. For this you need to set the `isNoControlWorkflow` configuration value to "true" (e.g. via `--cvalues` or the XML). You still need to set the `possibleTumorSampleNamePrefixes` to the prefixes of the allowed tumor samples and all the other "tumor"-related variables, but variables referring to "control", such as `controlStdIsizePercentage`, are then not required.
 
 ## Output
 
@@ -173,7 +173,7 @@ The `svs_*_filtered_*.tsv` files, except of the `*_overhangCandidates.tsv` have 
 
 Please refer to [Umut Toprak's dissertation](https://doi.org/10.11588/heidok.00027429), which may make the semantics of some of the columns clearer.
 
-The script `fusionCandidates.py` generates some of the columns. Please refer to that script for the exact logic. The following only gives a rough description of what is happening there. In total there are 5 colums added by that script, 2 for direct fusions and 3 for indirect fusions.
+The script `fusionCandidates.py` generates some of the columns. Please refer to that script for the exact logic. The following only gives a rough description of what is happening there. In total there are 5 columns added by that script, 2 for direct fusions and 3 for indirect fusions.
 
 The columns "directFusionCandidates" and "directFusionCandidatesBothCancer" are direct fusion candidates displayed in the format "leftComponent-rightComponent" with the candidates taken both from the `gene{1,2}Raw` or `gene{1,2}RawCancer` columns for the "directFusionCandidates" or "directFusionCandidatesBothCancer" columns, respectively. If one of the components has the value "" or "." in the gene column, the component is displayed as "(TRUNC)", if they are identical (both "(TRUNC)") then the value "." is given. 
 
