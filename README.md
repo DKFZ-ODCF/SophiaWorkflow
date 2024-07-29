@@ -1,6 +1,8 @@
-# Description
+# SophiaWorkflow
 
 A workflow calling structural variants in cancer samples, which wraps the [Sophia](https://bitbucket.org/utoprak/sophia) tool using the [Roddy Workflow Management Systems](https://github.com/TheRoddyWMS/Roddy).
+
+> NOTE: This software is for research-use only (RUO).
 
 ## Method
 
@@ -184,7 +186,37 @@ The columns "indirectFusionCandidatesLeftCancerRightAny", "indirectFusionCandida
 For debugging purposes, e.g. during development, a [script](./compareSVsTSVs) is available that checks the `svs_*_filtered_*.tsv` files for identity. This script also does some basic format checks for the columns (like checking gene list formats, etc.). You can install Scala via [SDKman!](https://sdkman.io/). Execute the script with the two directories containing the `svs_*.tsv` files. Note that because prior to version 2.2.2 the fusion candidate columns were processed by quasi randomly selecting from 
 the processed gene identifiers columns, results from <2.2.2 and >=2.2.2 cannot be compared directly. A check that the identifiers in the fusion candidate strings may have been, taken from the other colunms, has not yet been implemented in the script (due to its complexity). To compare results involving versions <2.2.2, use "false" as the first parameter additionally to the two directories to compare. The candidates columns are then ignored and **not** checked at all.
 
+## Contributors Information
+
+The full developer information is available in the [Roddy documentation](https://roddy-documentation.readthedocs.io/en/latest/roddyDevelopment/developersGuide.html).
+
+Some basic information:
+
+* We use [Semantic Versioning 2.0](https://semver.org/).
+   * Release versions are named according to the pattern `\d\.\d\.\d(-(RC)?\d+`.
+   * The first three levels are the "major", "minor", and "patch" number. The patch number is occasionally also called "build" number.
+   * Additionally to the major, minor, and patch numbers, a "revision" number `-\d+` can be attached.
+   * It is possible to tag release candidate using suffixes `-RC\d+`
+* We use [Github-Flow](https://githubflow.github.io/) as branching models.
+* Additional to the "master" branch for long-term support of older versions it is possible to have dedicated release branches.
+   * Release branches should be named according to the pattern `ReleaseBranch_\d+\.\d+(\.\d+)`.
+* Issues can be marked with the following labels
+  * `in progress`
+  * `bug::candidate`
+  * `bug::minor`
+  * `bug::normal`
+  * `bug::critical`
+
 ## Change Log
+
+Change log entries should have the form
+
+```markdown
+* $version
+   * major: A change that breaks backwards compatibility
+   * minor: A change that adds features, without breaking backwards compatibility
+   * patch: A change that does neither add a feature, nor breaks backwards compatibility
+```
 
 * 2.2.3
 
